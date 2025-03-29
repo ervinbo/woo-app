@@ -1,10 +1,10 @@
 
 import React, { ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Package, ShoppingCart, Users, BarChart, LogOut } from 'lucide-react';
+import { Home, Package, ShoppingCart, Users, BarChart, LogOut, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { wooCommerceApi } from '@/services/api';
-import { toast } from '@/lib/toast'; // Updated import
+import { toast } from '@/lib/toast';
 
 interface MobileLayoutProps {
   children: ReactNode;
@@ -27,6 +27,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children, title }) => {
     { label: 'Orders', icon: <ShoppingCart size={24} />, path: '/orders' },
     { label: 'Customers', icon: <Users size={24} />, path: '/customers' },
     { label: 'Stats', icon: <BarChart size={24} />, path: '/stats' },
+    { label: 'Settings', icon: <Settings size={24} />, path: '/settings' },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -47,12 +48,12 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children, title }) => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-4">
+      <main className="flex-1 overflow-y-auto p-4 pb-20">
         {children}
       </main>
 
-      {/* Navigation Bar */}
-      <nav className="bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.1)] px-2 py-1">
+      {/* Navigation Bar - Fixed at the bottom */}
+      <nav className="bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.1)] px-2 py-1 fixed bottom-0 left-0 right-0 z-50">
         <div className="flex justify-around">
           {navItems.map((item) => (
             <Button
