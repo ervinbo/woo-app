@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { wooCommerceApi } from '@/services/api';
@@ -8,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Mail, Phone } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { toast } from '@/components/ui/sonner';
+import { toast } from '@/lib/toast';
 
 const Customers = () => {
   const navigate = useNavigate();

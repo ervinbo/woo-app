@@ -45,12 +45,14 @@ const Stats = () => {
 
   // Prepare data for charts
   const prepareChartData = () => {
-    if (!recentOrders || !recentOrders.length) return [];
+    // Add type assertion to ensure TypeScript knows recentOrders is an array
+    const orders = recentOrders as any[] | undefined;
+    if (!orders || !orders.length) return [];
 
     // Group orders by date and calculate daily revenue
     const dailyRevenue: Record<string, number> = {};
     
-    recentOrders.forEach((order: any) => {
+    orders.forEach((order: any) => {
       const date = new Date(order.date_created).toISOString().split('T')[0];
       const total = parseFloat(order.total);
       
@@ -71,12 +73,14 @@ const Stats = () => {
   };
 
   const calculateProductStats = () => {
-    if (!recentOrders || !recentOrders.length) return [];
+    // Add type assertion to ensure TypeScript knows recentOrders is an array
+    const orders = recentOrders as any[] | undefined;
+    if (!orders || !orders.length) return [];
 
     // Count products by quantity sold
     const productCounts: Record<string, { id: number, name: string, count: number }> = {};
     
-    recentOrders.forEach((order: any) => {
+    orders.forEach((order: any) => {
       if (order.line_items && order.line_items.length) {
         order.line_items.forEach((item: any) => {
           const productId = item.product_id;
@@ -103,10 +107,12 @@ const Stats = () => {
   };
 
   const calculateOrderStats = () => {
-    if (!recentOrders || !recentOrders.length) return { total: 0, average: 0 };
+    // Add type assertion to ensure TypeScript knows recentOrders is an array
+    const orders = recentOrders as any[] | undefined;
+    if (!orders || !orders.length) return { total: 0, average: 0 };
 
-    const total = recentOrders.length;
-    const totalRevenue = recentOrders.reduce((sum: number, order: any) => 
+    const total = orders.length;
+    const totalRevenue = orders.reduce((sum: number, order: any) => 
       sum + parseFloat(order.total), 0);
     const average = totalRevenue / total;
 

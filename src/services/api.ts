@@ -1,5 +1,5 @@
 
-import { toast } from "@/components/ui/sonner";
+import { toast } from "@/lib/toast"; // Updated import
 
 export interface WooCommerceCredentials {
   siteUrl: string;

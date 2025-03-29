@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
-import { toast } from '@/components/ui/sonner';
+import { toast } from '@/lib/toast'; // Updated import
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Package, ArrowLeft, Loader2 } from 'lucide-react';

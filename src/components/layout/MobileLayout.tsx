@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, Package, ShoppingCart, Users, BarChart, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { wooCommerceApi } from '@/services/api';
-import { toast } from '@/components/ui/sonner';
+import { toast } from '@/lib/toast'; // Updated import
 
 interface MobileLayoutProps {
   children: ReactNode;

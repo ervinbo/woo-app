@@ -6,9 +6,9 @@ import MobileLayout from '@/components/layout/MobileLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Package } from 'lucide-react'; // Added Package icon import
 import { useQuery } from '@tanstack/react-query';
-import { toast } from '@/components/ui/sonner';
+import { toast } from '@/lib/toast'; // Updated import
 import {
   AlertDialog,
   AlertDialogAction,

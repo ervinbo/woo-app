@@ -5,7 +5,7 @@ import { wooCommerceApi } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from '@/components/ui/sonner';
+import { toast } from '@/lib/toast'; // Updated import
 import { ShoppingCart } from 'lucide-react';
 
 const Auth = () => {

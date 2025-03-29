@@ -5,7 +5,7 @@ import { wooCommerceApi } from '@/services/api';
 import MobileLayout from '@/components/layout/MobileLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, ShoppingCart, Users, DollarSign } from 'lucide-react';
-import { toast } from '@/components/ui/sonner';
+import { toast } from '@/lib/toast'; // Updated import
 import { useQuery } from '@tanstack/react-query';
 
 interface DashboardStats {

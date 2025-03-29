@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { wooCommerceApi } from '@/services/api';
@@ -6,7 +5,7 @@ import MobileLayout from '@/components/layout/MobileLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
-import { toast } from '@/components/ui/sonner';
+import { toast } from '@/lib/toast';
 import { ArrowLeft, Package, Phone, Mail, MapPin, Loader2 } from 'lucide-react';
 import {
   Select,
@@ -298,7 +297,6 @@ const OrderDetail = () => {
   );
 };
 
-// Helper function to get color based on order status
 const getStatusColor = (status: string): string => {
   switch (status) {
     case 'completed':
