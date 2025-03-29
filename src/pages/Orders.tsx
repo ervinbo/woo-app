@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { wooCommerceApi } from '@/services/api';
@@ -20,7 +19,7 @@ const Orders = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const perPage = 10;
 
   useEffect(() => {
@@ -33,7 +32,8 @@ const Orders = () => {
     queryKey: ['orders', page, statusFilter],
     queryFn: async () => {
       try {
-        return await wooCommerceApi.getOrders(page, perPage, statusFilter);
+        const actualStatusFilter = statusFilter === 'all' ? '' : statusFilter;
+        return await wooCommerceApi.getOrders(page, perPage, actualStatusFilter);
       } catch (error) {
         console.error('Failed to fetch orders:', error);
         throw error;
@@ -53,7 +53,7 @@ const Orders = () => {
   );
 
   const statusOptions = [
-    { value: '', label: 'All Statuses' },
+    { value: 'all', label: 'All Statuses' },
     { value: 'pending', label: 'Pending' },
     { value: 'processing', label: 'Processing' },
     { value: 'on-hold', label: 'On Hold' },
@@ -195,7 +195,6 @@ const Orders = () => {
   );
 };
 
-// Helper function to get color based on order status
 const getStatusColor = (status: string): string => {
   switch (status) {
     case 'completed':
