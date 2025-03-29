@@ -1,6 +1,6 @@
 
 import * as React from "react";
-import { addDays, format } from "date-fns";
+import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,7 @@ import {
 
 interface DatePickerWithRangeProps {
   date: DateRange | undefined;
-  setDate: (date: DateRange) => void;
+  setDate: React.Dispatch<React.SetStateAction<DateRange>> | ((date: DateRange) => void);
   className?: string;
 }
 
@@ -60,6 +60,7 @@ export function DatePickerWithRange({
               if (newDate) setDate(newDate);
             }}
             numberOfMonths={1}
+            className="pointer-events-auto"
           />
         </PopoverContent>
       </Popover>

@@ -11,6 +11,7 @@ import { DatePickerWithRange } from '@/components/DatePickerWithRange';
 import { Button } from '@/components/ui/button';
 import { Filter } from 'lucide-react';
 import { addDays, format, subDays } from 'date-fns';
+import { DateRange } from 'react-day-picker';
 import { 
   Select,
   SelectContent,
@@ -26,7 +27,8 @@ import {
 
 const Stats = () => {
   const navigate = useNavigate();
-  const [dateRange, setDateRange] = useState({
+  // Update the type to DateRange
+  const [dateRange, setDateRange] = useState<DateRange>({
     from: subDays(new Date(), 30), // Default to last 30 days
     to: new Date(),
   });
@@ -51,10 +53,12 @@ const Stats = () => {
         const fromDate = dateRange.from;
         const toDate = dateRange.to;
         
+        if (!fromDate) return [];
+        
         return Array.isArray(orders) 
           ? orders.filter((order: any) => {
               const orderDate = new Date(order.date_created);
-              return orderDate >= fromDate && orderDate <= toDate;
+              return orderDate >= fromDate && (!toDate || orderDate <= toDate);
             })
           : [];
       } catch (error) {
