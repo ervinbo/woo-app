@@ -1,5 +1,5 @@
 
-import { toast } from "@/lib/toast"; // Updated import
+import { toast } from "@/lib/toast";
 
 export interface WooCommerceCredentials {
   siteUrl: string;
@@ -86,7 +86,7 @@ class WooCommerceApi {
       const response = await fetch(url, options);
       
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || `API request failed with status ${response.status}`);
       }
 
@@ -148,28 +148,29 @@ class WooCommerceApi {
 
   // Stats
   async getStats(): Promise<any> {
-    const today = new Date();
-    const lastMonth = new Date();
-    lastMonth.setMonth(today.getMonth() - 1);
-    
-    const formatDate = (date: Date) => {
-      return date.toISOString().split('T')[0];
-    };
+    try {
+      // Fetch recent orders without date filtering (we'll filter client-side)
+      const recentOrders = await this.request('orders?per_page=20');
+      
+      // Fetch product and customer stats
+      const [productStats, customerStats] = await Promise.all([
+        this.request('reports/products/totals'),
+        this.request('reports/customers/totals')
+      ]);
 
-    const after = formatDate(lastMonth);
-    const before = formatDate(today);
-    
-    const [recentOrders, productStats, customerStats] = await Promise.all([
-      this.request(`orders?after=${after}&before=${before}&per_page=5`),
-      this.request('reports/products/totals'),
-      this.request('reports/customers/totals')
-    ]);
-
-    return {
-      recentOrders,
-      productStats,
-      customerStats
-    };
+      return {
+        recentOrders: Array.isArray(recentOrders) ? recentOrders : [],
+        productStats: Array.isArray(productStats) ? productStats : [],
+        customerStats: Array.isArray(customerStats) ? customerStats : []
+      };
+    } catch (error) {
+      console.error('Failed to fetch stats:', error);
+      return {
+        recentOrders: [],
+        productStats: [],
+        customerStats: []
+      };
+    }
   }
 }
 

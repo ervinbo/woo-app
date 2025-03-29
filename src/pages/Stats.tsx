@@ -6,6 +6,7 @@ import MobileLayout from '@/components/layout/MobileLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { toast } from '@/lib/toast';
 
 const Stats = () => {
   const navigate = useNavigate();
@@ -20,23 +21,23 @@ const Stats = () => {
     queryKey: ['statsOrders'],
     queryFn: async () => {
       try {
-        // Get orders from the last 30 days
-        const today = new Date();
+        // WooCommerce API doesn't accept direct date parameters in the format we used before
+        // Instead, fetch orders and do client-side filtering
+        const orders = await wooCommerceApi.request('orders?per_page=50');
+        
+        // Filter for the last 30 days
         const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(today.getDate() - 30);
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         
-        const formatDate = (date: Date) => {
-          return date.toISOString().split('T')[0];
-        };
-
-        const after = formatDate(thirtyDaysAgo);
-        const before = formatDate(today);
-        
-        // Fetch orders for the last 30 days with a larger per_page value
-        const orders = await wooCommerceApi.request(`orders?after=${after}&before=${before}&per_page=50`);
-        return orders;
+        return Array.isArray(orders) 
+          ? orders.filter((order: any) => {
+              const orderDate = new Date(order.date_created);
+              return orderDate >= thirtyDaysAgo;
+            })
+          : [];
       } catch (error) {
         console.error('Failed to fetch orders for stats:', error);
+        toast.error('Failed to load statistics data');
         throw error;
       }
     },

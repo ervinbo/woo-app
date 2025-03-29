@@ -1,11 +1,11 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { wooCommerceApi } from '@/services/api';
 import MobileLayout from '@/components/layout/MobileLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, ShoppingCart, Users, DollarSign } from 'lucide-react';
-import { toast } from '@/lib/toast'; // Updated import
+import { toast } from '@/lib/toast';
 import { useQuery } from '@tanstack/react-query';
 
 interface DashboardStats {
@@ -31,15 +31,23 @@ const Dashboard = () => {
         // Fetch initial stats
         const data = await wooCommerceApi.getStats();
         
+        // Make sure recentOrders is an array before reducing
+        const recentOrders = Array.isArray(data.recentOrders) ? data.recentOrders : [];
+        
         // Calculate total revenue from recent orders
-        const totalRevenue = data.recentOrders.reduce(
+        const totalRevenue = recentOrders.reduce(
           (sum: number, order: any) => sum + parseFloat(order.total), 
           0
         );
 
-        return { ...data, totalRevenue };
+        return { 
+          ...data, 
+          recentOrders,
+          totalRevenue 
+        };
       } catch (error) {
         console.error('Failed to fetch dashboard stats:', error);
+        toast.error('Failed to load dashboard data');
         throw error;
       }
     },
@@ -57,7 +65,6 @@ const Dashboard = () => {
   }
 
   if (error) {
-    toast.error('Failed to load dashboard data');
     return (
       <MobileLayout title="Dashboard">
         <div className="py-10 text-center">
@@ -73,6 +80,11 @@ const Dashboard = () => {
     );
   }
 
+  const safeStats = stats || { recentOrders: [], productStats: [], customerStats: [], totalRevenue: 0 };
+  const productCount = Array.isArray(safeStats.productStats) ? safeStats.productStats.length : 0;
+  const orderCount = Array.isArray(safeStats.recentOrders) ? safeStats.recentOrders.length : 0;
+  const customerCount = Array.isArray(safeStats.customerStats) ? safeStats.customerStats.length : 0;
+
   return (
     <MobileLayout title="Dashboard">
       <div className="space-y-4">
@@ -82,25 +94,25 @@ const Dashboard = () => {
         <div className="grid grid-cols-2 gap-4">
           <StatsCard 
             title="Products" 
-            value={stats?.productStats?.length || 0} 
+            value={productCount} 
             icon={<Package className="h-8 w-8 text-blue-500" />} 
             onClick={() => navigate('/products')}
           />
           <StatsCard 
             title="Orders" 
-            value={stats?.recentOrders?.length || 0} 
+            value={orderCount} 
             icon={<ShoppingCart className="h-8 w-8 text-green-500" />} 
             onClick={() => navigate('/orders')}
           />
           <StatsCard 
             title="Customers" 
-            value={stats?.customerStats?.length || 0} 
+            value={customerCount} 
             icon={<Users className="h-8 w-8 text-purple-500" />} 
             onClick={() => navigate('/customers')}
           />
           <StatsCard 
             title="Revenue" 
-            value={`$${stats?.totalRevenue?.toFixed(2) || '0.00'}`} 
+            value={`$${safeStats.totalRevenue?.toFixed(2) || '0.00'}`} 
             icon={<DollarSign className="h-8 w-8 text-amber-500" />} 
             onClick={() => navigate('/stats')}
             valueClassName="text-lg"
@@ -113,9 +125,9 @@ const Dashboard = () => {
             <CardTitle className="text-lg">Recent Orders</CardTitle>
           </CardHeader>
           <CardContent>
-            {stats?.recentOrders?.length ? (
+            {safeStats.recentOrders?.length ? (
               <div className="space-y-3">
-                {stats.recentOrders.map((order: any) => (
+                {safeStats.recentOrders.map((order: any) => (
                   <div 
                     key={order.id} 
                     className="flex justify-between items-center p-3 bg-white rounded-md shadow-sm border cursor-pointer hover:bg-gray-50"
