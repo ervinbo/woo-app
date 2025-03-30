@@ -8,10 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
-import { toast } from '@/lib/toast'; // Updated import
+import { toast } from '@/lib/toast';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Package, ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
+import ImageUploader from '@/components/product/ImageUploader';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -31,7 +32,7 @@ const ProductDetail = () => {
     stock_quantity: '',
     sku: '',
     categories: [],
-    images: []
+    images: [] as Array<{ id?: number, src: string, alt?: string }>
   });
 
   useEffect(() => {
@@ -69,6 +70,20 @@ const ProductDetail = () => {
 
   const handleSwitchChange = (name: string, checked: boolean) => {
     setProduct({ ...product, [name]: checked });
+  };
+
+  const handleImageSelect = (imageDataUrl: string) => {
+    // Create a new image object with the uploaded image data
+    const newImage = {
+      src: imageDataUrl,
+      alt: product.name || 'Product image'
+    };
+    
+    // Update product state with the new image
+    setProduct({
+      ...product,
+      images: [newImage, ...product.images.slice(1)] // Replace first image or add as first
+    });
   };
 
   const handleSave = async () => {
@@ -146,17 +161,10 @@ const ProductDetail = () => {
           <Card>
             <CardContent className="p-4 space-y-4">
               <div className="flex justify-center mb-4">
-                {product.images && product.images[0] ? (
-                  <img 
-                    src={product.images[0].src} 
-                    alt={product.name} 
-                    className="w-32 h-32 object-contain rounded-md"
-                  />
-                ) : (
-                  <div className="w-32 h-32 flex items-center justify-center bg-gray-200 rounded-md">
-                    <Package className="h-12 w-12 text-gray-400" />
-                  </div>
-                )}
+                <ImageUploader 
+                  currentImage={product.images && product.images[0] ? product.images[0].src : undefined}
+                  onImageSelect={handleImageSelect}
+                />
               </div>
 
               <div className="space-y-2">

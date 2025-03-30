@@ -80,6 +80,20 @@ class WooCommerceApi {
       };
 
       if (data && (method === 'POST' || method === 'PUT')) {
+        // Process base64 image data before sending to API
+        if (data.images && data.images.length > 0) {
+          data.images = data.images.map((image: any) => {
+            // If the image source is a base64 data URL, handle it
+            if (image.src && image.src.startsWith('data:image')) {
+              return {
+                ...image,
+                base64_img: image.src.split(',')[1]  // Extract base64 data without the data:image prefix
+              };
+            }
+            return image;
+          });
+        }
+        
         options.body = JSON.stringify(data);
       }
 
