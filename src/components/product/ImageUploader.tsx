@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Camera, Image as ImageIcon, ImagePlus, Crop, RefreshCw, Save } from 'lucide-react';
+import { Camera, ImageIcon, ImagePlus, Crop, RefreshCw, Save } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
@@ -168,7 +168,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImage, onImageSele
 
       <div className="flex gap-2 flex-wrap justify-center">
         <Button variant="outline" size="sm" onClick={handleChooseFile}>
-          <Image className="h-4 w-4 mr-2" />
+          <ImageIcon className="h-4 w-4 mr-2" />
           Gallery
         </Button>
         <Button variant="outline" size="sm" onClick={startCamera}>
