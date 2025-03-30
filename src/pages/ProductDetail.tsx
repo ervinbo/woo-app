@@ -51,7 +51,8 @@ const ProductDetail = () => {
           ...data,
           regular_price: data.regular_price || '',
           sale_price: data.sale_price || '',
-          stock_quantity: data.stock_quantity ? String(data.stock_quantity) : ''
+          stock_quantity: data.stock_quantity ? String(data.stock_quantity) : '',
+          images: data.images || []
         });
         return data;
       } catch (error) {
@@ -72,17 +73,10 @@ const ProductDetail = () => {
     setProduct({ ...product, [name]: checked });
   };
 
-  const handleImageSelect = (imageDataUrl: string) => {
-    // Create a new image object with the uploaded image data
-    const newImage = {
-      src: imageDataUrl,
-      alt: product.name || 'Product image'
-    };
-    
-    // Update product state with the new image
+  const handleImagesUpdate = (updatedImages: Array<{ id?: number, src: string, alt?: string }>) => {
     setProduct({
       ...product,
-      images: [newImage, ...product.images.slice(1)] // Replace first image or add as first
+      images: updatedImages
     });
   };
 
@@ -160,10 +154,11 @@ const ProductDetail = () => {
         <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
           <Card>
             <CardContent className="p-4 space-y-4">
-              <div className="flex justify-center mb-4">
+              <div className="mb-4">
+                <Label>Product Images</Label>
                 <ImageUploader 
-                  currentImage={product.images && product.images[0] ? product.images[0].src : undefined}
-                  onImageSelect={handleImageSelect}
+                  images={product.images}
+                  onImagesUpdate={handleImagesUpdate}
                 />
               </div>
 

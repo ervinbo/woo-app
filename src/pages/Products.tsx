@@ -6,9 +6,9 @@ import MobileLayout from '@/components/layout/MobileLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, Edit, Trash2, Package } from 'lucide-react'; // Added Package icon import
+import { Plus, Search, Edit, Trash2, Package } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { toast } from '@/lib/toast'; // Updated import
+import { toast } from '@/lib/toast';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +19,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
+} from "@/components/ui/carousel";
 
 const Products = () => {
   const navigate = useNavigate();
@@ -133,12 +140,30 @@ const Products = () => {
                       className="w-16 h-16 rounded-md bg-gray-100 mr-3 flex-shrink-0 overflow-hidden"
                       onClick={() => handleEditProduct(product.id)}
                     >
-                      {product.images && product.images[0] ? (
-                        <img 
-                          src={product.images[0].src} 
-                          alt={product.name} 
-                          className="w-full h-full object-cover"
-                        />
+                      {product.images && product.images.length > 0 ? (
+                        product.images.length === 1 ? (
+                          <img 
+                            src={product.images[0].src} 
+                            alt={product.name} 
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <Carousel className="w-full h-full">
+                            <CarouselContent className="h-full">
+                              {product.images.map((image: any, index: number) => (
+                                <CarouselItem key={index} className="h-full">
+                                  <img 
+                                    src={image.src} 
+                                    alt={product.name} 
+                                    className="w-full h-full object-cover"
+                                  />
+                                </CarouselItem>
+                              ))}
+                            </CarouselContent>
+                            <CarouselPrevious className="h-6 w-6 -left-1" />
+                            <CarouselNext className="h-6 w-6 -right-1" />
+                          </Carousel>
+                        )
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-gray-200">
                           <Package className="h-8 w-8 text-gray-400" />

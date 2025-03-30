@@ -1,19 +1,19 @@
 
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Camera, ImageIcon, ImagePlus, Crop, RefreshCw, Save } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Camera, ImageIcon, ImagePlus, Crop, RefreshCw, Save, Trash2, SwitchCamera } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/lib/toast';
 
 interface ImageUploaderProps {
-  currentImage?: string;
-  onImageSelect: (image: string) => void;
+  images: Array<{ id?: number, src: string, alt?: string }>;
+  onImagesUpdate: (images: Array<{ id?: number, src: string, alt?: string }>) => void;
 }
 
-const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImage, onImageSelect }) => {
-  const [selectedImage, setSelectedImage] = useState<string | null>(currentImage || null);
+const ImageUploader: React.FC<ImageUploaderProps> = ({ images, onImagesUpdate }) => {
+  const [editingImageIndex, setEditingImageIndex] = useState<number | null>(null);
   const [editingImage, setEditingImage] = useState<string | null>(null);
   const [brightness, setBrightness] = useState<number>(100);
   const [contrast, setContrast] = useState<number>(100);
@@ -24,22 +24,25 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImage, onImageSele
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [showCamera, setShowCamera] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const imageDataUrl = e.target?.result as string;
-        setSelectedImage(imageDataUrl);
-        setEditingImage(imageDataUrl);
-        setIsDialogOpen(true);
-        resetEditingControls();
-      };
-      reader.readAsDataURL(file);
-    } else {
-      toast.error('Please select a valid image file');
-    }
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+    
+    Array.from(files).forEach(file => {
+      if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const imageDataUrl = e.target?.result as string;
+          // Add new image to the array
+          onImagesUpdate([...images, { src: imageDataUrl, alt: 'Product image' }]);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        toast.error('Please select valid image files');
+      }
+    });
   };
 
   const resetEditingControls = () => {
@@ -52,14 +55,28 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImage, onImageSele
   const startCamera = async () => {
     setShowCamera(true);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       if (videoRef.current) {
+        if (videoRef.current.srcObject) {
+          const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+          tracks.forEach(track => track.stop());
+        }
+        
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: facingMode } 
+        });
         videoRef.current.srcObject = stream;
       }
     } catch (error) {
       console.error('Error accessing camera:', error);
       toast.error('Unable to access camera. Please check permissions.');
       setShowCamera(false);
+    }
+  };
+
+  const toggleCamera = async () => {
+    setFacingMode(facingMode === 'user' ? 'environment' : 'user');
+    if (showCamera) {
+      startCamera();
     }
   };
 
@@ -88,19 +105,23 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImage, onImageSele
         
         // Convert canvas to data URL
         const imageDataUrl = canvas.toDataURL('image/jpeg');
-        setSelectedImage(imageDataUrl);
-        setEditingImage(imageDataUrl);
+        onImagesUpdate([...images, { src: imageDataUrl, alt: 'Product image' }]);
         
         // Stop camera and show editing dialog
         stopCamera();
-        setIsDialogOpen(true);
-        resetEditingControls();
       }
     }
   };
 
+  const startImageEdit = (index: number) => {
+    setEditingImageIndex(index);
+    setEditingImage(images[index].src);
+    setIsDialogOpen(true);
+    resetEditingControls();
+  };
+
   const applyImageEdits = () => {
-    if (!editingImage) return;
+    if (!editingImage || editingImageIndex === null) return;
     
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -126,8 +147,14 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImage, onImageSele
         
         // Convert to data URL
         const editedImageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
-        setSelectedImage(editedImageDataUrl);
-        onImageSelect(editedImageDataUrl);
+        
+        // Update the specific image in the array
+        const updatedImages = [...images];
+        updatedImages[editingImageIndex] = {
+          ...updatedImages[editingImageIndex],
+          src: editedImageDataUrl
+        };
+        onImagesUpdate(updatedImages);
         setIsDialogOpen(false);
       };
       
@@ -139,31 +166,41 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImage, onImageSele
     fileInputRef.current?.click();
   };
 
+  const removeImage = (index: number) => {
+    const updatedImages = [...images];
+    updatedImages.splice(index, 1);
+    onImagesUpdate(updatedImages);
+  };
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-col items-center justify-center">
-        {selectedImage ? (
-          <div className="relative w-40 h-40 mb-2">
-            <img 
-              src={selectedImage} 
-              alt="Product" 
-              className="w-full h-full object-contain rounded-md border border-gray-200"
-            />
+      <div className="flex flex-wrap gap-2 justify-center">
+        {images.map((image, index) => (
+          <div key={index} className="relative">
+            <div className="w-20 h-20 border border-gray-200 rounded-md overflow-hidden">
+              <img 
+                src={image.src} 
+                alt={image.alt || 'Product image'} 
+                className="w-full h-full object-cover"
+                onClick={() => startImageEdit(index)}
+              />
+            </div>
             <Button 
-              onClick={() => setIsDialogOpen(true)} 
-              variant="secondary" 
-              size="sm" 
-              className="absolute bottom-2 right-2"
+              variant="destructive" 
+              size="icon" 
+              className="absolute -top-2 -right-2 w-6 h-6 rounded-full"
+              onClick={() => removeImage(index)}
             >
-              <Crop className="h-4 w-4 mr-1" />
-              Edit
+              <Trash2 className="h-3 w-3" />
             </Button>
           </div>
-        ) : (
-          <div className="w-40 h-40 flex items-center justify-center bg-gray-200 rounded-md mb-2">
-            <ImagePlus className="h-12 w-12 text-gray-400" />
-          </div>
-        )}
+        ))}
+        <div 
+          className="w-20 h-20 flex items-center justify-center bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200 transition-colors"
+          onClick={handleChooseFile}
+        >
+          <ImagePlus className="h-8 w-8 text-gray-500" />
+        </div>
       </div>
 
       <div className="flex gap-2 flex-wrap justify-center">
@@ -183,6 +220,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImage, onImageSele
         accept="image/*"
         className="hidden"
         onChange={handleFileChange}
+        multiple
       />
 
       {/* Camera Dialog */}
@@ -200,6 +238,14 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentImage, onImageSele
                 className="w-full h-auto"
               />
               <canvas ref={canvasRef} className="hidden" />
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="absolute top-2 right-2"
+                onClick={toggleCamera}
+              >
+                <SwitchCamera className="h-4 w-4" />
+              </Button>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={stopCamera}>Cancel</Button>
