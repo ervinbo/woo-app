@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Camera, Image, ImagePlus, Crop, RefreshCw, Save } from 'lucide-react';
+import { Camera, Image as ImageIcon, ImagePlus, Crop, RefreshCw, Save } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
