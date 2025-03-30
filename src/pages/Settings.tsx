@@ -6,12 +6,12 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/lib/toast';
-import { wooCommerceApi } from '@/services/api';
+import { wooCommerceApi, WooCommerceCredentials } from '@/services/api';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Input } from '@/components/ui/input';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronUp, ShoppingCart, Tag, Package, Truck, Shield, CreditCard } from 'lucide-react';
+import { ChevronDown, ChevronUp, ShoppingCart, Tag, Package, Truck, Shield, CreditCard, Key } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 
 const THEME_COLORS = [
@@ -40,6 +40,14 @@ const Settings = () => {
     shipping: false,
     checkout: false,
     taxes: false,
+    api: false,
+  });
+  
+  // API credentials
+  const [apiCredentials, setApiCredentials] = useState<WooCommerceCredentials>({
+    siteUrl: '',
+    consumerKey: '',
+    consumerSecret: '',
   });
 
   useEffect(() => {
@@ -70,6 +78,16 @@ const Settings = () => {
     
     const savedGuestCheckout = localStorage.getItem('wooGuestCheckout') !== 'false';
     setGuestCheckout(savedGuestCheckout);
+    
+    // Load API credentials if they exist
+    const savedCredentials = localStorage.getItem('woocommerce_credentials');
+    if (savedCredentials) {
+      try {
+        setApiCredentials(JSON.parse(savedCredentials));
+      } catch (error) {
+        console.error('Error parsing saved credentials:', error);
+      }
+    }
     
     // Apply theme color on load
     applyThemeColor(savedTheme);
@@ -139,6 +157,63 @@ const Settings = () => {
       ...prev,
       [section]: !prev[section]
     }));
+  };
+  
+  const handleCredentialChange = (field: keyof WooCommerceCredentials, value: string) => {
+    setApiCredentials(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+  
+  const saveCredentials = () => {
+    setIsLoading(true);
+    try {
+      // Validate inputs
+      if (!apiCredentials.siteUrl) {
+        toast.error('Site URL is required');
+        setIsLoading(false);
+        return;
+      }
+      
+      if (!apiCredentials.siteUrl.startsWith('https://') && !apiCredentials.siteUrl.startsWith('http://')) {
+        toast.error('Site URL must start with http:// or https://');
+        setIsLoading(false);
+        return;
+      }
+      
+      if (!apiCredentials.consumerKey || !apiCredentials.consumerSecret) {
+        toast.error('Consumer Key and Consumer Secret are required');
+        setIsLoading(false);
+        return;
+      }
+      
+      // Save credentials to API service and localStorage
+      wooCommerceApi.saveCredentials(apiCredentials);
+      toast.success('API credentials saved successfully');
+      
+      // Test connection
+      testConnection();
+    } catch (error) {
+      toast.error('Failed to save credentials');
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const testConnection = async () => {
+    setIsLoading(true);
+    try {
+      // Try to fetch a small amount of data to test the connection
+      await wooCommerceApi.getProducts(1, 1);
+      toast.success('Connection successful! API credentials are working.');
+    } catch (error) {
+      toast.error('Connection failed. Please check your credentials.');
+      console.error('API connection test failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -373,6 +448,91 @@ const Settings = () => {
                     onCheckedChange={(value) => handleSetting('TaxIncluded', value)}
                     disabled={isLoading}
                   />
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+            
+            <Separator />
+            
+            {/* API Keys section */}
+            <Collapsible open={settingsSections.api} onOpenChange={() => toggleSection('api')}>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" className="flex w-full justify-between p-2">
+                  <div className="flex items-center">
+                    <Key className="h-5 w-5 mr-2" />
+                    <span>REST API Keys</span>
+                  </div>
+                  {settingsSections.api ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-4 px-1 pt-2">
+                <div className="space-y-1 mb-2">
+                  <p className="text-sm text-muted-foreground">
+                    Enter your WooCommerce REST API credentials to connect to your store
+                  </p>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="site-url">Site URL</Label>
+                    <Input
+                      id="site-url"
+                      type="url"
+                      placeholder="https://yourstorename.com"
+                      value={apiCredentials.siteUrl}
+                      onChange={(e) => handleCredentialChange('siteUrl', e.target.value)}
+                      disabled={isLoading}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      The full URL to your WooCommerce store
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="consumer-key">Consumer Key</Label>
+                    <Input
+                      id="consumer-key"
+                      type="password"
+                      placeholder="ck_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                      value={apiCredentials.consumerKey}
+                      onChange={(e) => handleCredentialChange('consumerKey', e.target.value)}
+                      disabled={isLoading}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="consumer-secret">Consumer Secret</Label>
+                    <Input
+                      id="consumer-secret"
+                      type="password"
+                      placeholder="cs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                      value={apiCredentials.consumerSecret}
+                      onChange={(e) => handleCredentialChange('consumerSecret', e.target.value)}
+                      disabled={isLoading}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      You can generate these keys from WooCommerce &gt; Settings &gt; Advanced &gt; REST API
+                    </p>
+                  </div>
+                  
+                  <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                    <Button
+                      onClick={saveCredentials}
+                      disabled={isLoading}
+                      className="w-full sm:w-auto"
+                    >
+                      Save Credentials
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      onClick={testConnection}
+                      disabled={isLoading || !wooCommerceApi.getAuthStatus()}
+                      className="w-full sm:w-auto"
+                    >
+                      Test Connection
+                    </Button>
+                  </div>
                 </div>
               </CollapsibleContent>
             </Collapsible>
