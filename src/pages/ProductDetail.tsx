@@ -56,11 +56,11 @@ const ProductDetail = () => {
         });
         return data;
       } catch (error) {
-        console.error('Failed to fetch product:', error);
+        console.error('Greška pri učitavanju proizvoda:', error);
         throw error;
       }
     },
-    staleTime: 60000, // 1 minute
+    staleTime: 60000, // 1 minut
     enabled: !isNewProduct && !!id,
   });
 
@@ -82,17 +82,22 @@ const ProductDetail = () => {
 
   const handleSave = async () => {
     if (!product.name || !product.regular_price) {
-      toast.error('Назив производа и редовна цена су обавезни');
+      toast.error('Naziv proizvoda i redovna cena su obavezni');
       return;
     }
 
+    // Pripremi podatke za slanje API-ju
     const productData = {
       ...product,
-      // Convert price strings to strings just to be safe
+      // Osiguraj da su cene stringovi
       regular_price: String(product.regular_price),
-      sale_price: String(product.sale_price),
-      // Convert stock quantity to number if present
-      stock_quantity: product.stock_quantity ? parseInt(product.stock_quantity) : null
+      sale_price: product.sale_price ? String(product.sale_price) : '',
+      // Osiguraj da je količina zaliha broj ako je prisutna
+      stock_quantity: product.stock_quantity ? parseInt(product.stock_quantity, 10) : null,
+      // Osiguraj da kategorije budu pravilno formatirane (ako postoje)
+      categories: Array.isArray(product.categories) && product.categories.length > 0 
+        ? product.categories 
+        : undefined
     };
 
     setIsSaving(true);
@@ -100,15 +105,21 @@ const ProductDetail = () => {
     try {
       if (isNewProduct) {
         await wooCommerceApi.createProduct(productData);
-        toast.success('Производ је успешно креиран');
+        toast.success('Proizvod je uspešno kreiran');
       } else {
         await wooCommerceApi.updateProduct(Number(id), productData);
-        toast.success('Производ је успешно ажуриран');
+        toast.success('Proizvod je uspešno ažuriran');
       }
       navigate('/products');
     } catch (error) {
-      console.error('Failed to save product:', error);
-      toast.error('Грешка при чувању производа');
+      console.error('Greška pri čuvanju proizvoda:', error);
+      
+      if (error instanceof Error) {
+        // Prikaži specifičnu poruku o grešci
+        toast.error(`Greška: ${error.message}`);
+      } else {
+        toast.error('Greška pri čuvanju proizvoda');
+      }
     } finally {
       setIsSaving(false);
     }
@@ -116,7 +127,7 @@ const ProductDetail = () => {
 
   if (isLoading && !isNewProduct) {
     return (
-      <MobileLayout title={isNewProduct ? 'Нови производ' : 'Измена производа'}>
+      <MobileLayout title={isNewProduct ? 'Novi proizvod' : 'Izmena proizvoda'}>
         <div className="py-10 flex items-center justify-center">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
@@ -126,14 +137,14 @@ const ProductDetail = () => {
 
   if (error && !isNewProduct) {
     return (
-      <MobileLayout title="Детаљи производа">
+      <MobileLayout title="Detalji proizvoda">
         <div className="py-10 text-center">
-          <p className="text-red-500">Грешка при учитавању детаља производа</p>
+          <p className="text-red-500">Greška pri učitavanju detalja proizvoda</p>
           <Button 
             className="mt-4"
             onClick={() => navigate('/products')}
           >
-            Назад на производе
+            Nazad na proizvode
           </Button>
         </div>
       </MobileLayout>
@@ -141,21 +152,21 @@ const ProductDetail = () => {
   }
 
   return (
-    <MobileLayout title={isNewProduct ? 'Нови производ' : 'Измена производа'}>
+    <MobileLayout title={isNewProduct ? 'Novi proizvod' : 'Izmena proizvoda'}>
       <div className="space-y-4">
         <Button 
           variant="ghost" 
           className="flex items-center text-gray-500"
           onClick={() => navigate('/products')}
         >
-          <ArrowLeft className="h-4 w-4 mr-1" /> Назад на производе
+          <ArrowLeft className="h-4 w-4 mr-1" /> Nazad na proizvode
         </Button>
 
         <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
           <Card>
             <CardContent className="p-4 space-y-4">
               <div className="mb-4">
-                <Label>Слике производа</Label>
+                <Label>Slike proizvoda</Label>
                 <ImageUploader 
                   images={product.images}
                   onImagesUpdate={handleImagesUpdate}
@@ -163,20 +174,20 @@ const ProductDetail = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="name">Назив производа *</Label>
+                <Label htmlFor="name">Naziv proizvoda *</Label>
                 <Input
                   id="name"
                   name="name"
                   value={product.name}
                   onChange={handleInputChange}
-                  placeholder="Назив производа"
+                  placeholder="Naziv proizvoda"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="regular_price">Редовна цена *</Label>
+                  <Label htmlFor="regular_price">Redovna cena *</Label>
                   <Input
                     id="regular_price"
                     name="regular_price"
@@ -189,7 +200,7 @@ const ProductDetail = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="sale_price">Акцијска цена</Label>
+                  <Label htmlFor="sale_price">Akcijska cena</Label>
                   <Input
                     id="sale_price"
                     name="sale_price"
@@ -203,7 +214,7 @@ const ProductDetail = () => {
               </div>
 
               <div className="flex items-center justify-between">
-                <Label htmlFor="on_sale">На акцији</Label>
+                <Label htmlFor="on_sale">Na akciji</Label>
                 <Switch 
                   id="on_sale" 
                   checked={product.on_sale}
@@ -212,7 +223,7 @@ const ProductDetail = () => {
               </div>
 
               <div className="flex items-center justify-between">
-                <Label htmlFor="manage_stock">Управљање залихама</Label>
+                <Label htmlFor="manage_stock">Upravljanje zalihama</Label>
                 <Switch 
                   id="manage_stock" 
                   checked={product.manage_stock}
@@ -222,7 +233,7 @@ const ProductDetail = () => {
 
               {product.manage_stock && (
                 <div className="space-y-2">
-                  <Label htmlFor="stock_quantity">Количина залиха</Label>
+                  <Label htmlFor="stock_quantity">Količina zaliha</Label>
                   <Input
                     id="stock_quantity"
                     name="stock_quantity"
@@ -235,7 +246,7 @@ const ProductDetail = () => {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="sku">Шифра производа</Label>
+                <Label htmlFor="sku">Šifra proizvoda</Label>
                 <Input
                   id="sku"
                   name="sku"
@@ -246,25 +257,25 @@ const ProductDetail = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="short_description">Кратак опис</Label>
+                <Label htmlFor="short_description">Kratak opis</Label>
                 <Textarea
                   id="short_description"
                   name="short_description"
                   value={product.short_description}
                   onChange={handleInputChange}
-                  placeholder="Кратак опис"
+                  placeholder="Kratak opis"
                   rows={2}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Опис</Label>
+                <Label htmlFor="description">Opis</Label>
                 <Textarea
                   id="description"
                   name="description"
                   value={product.description}
                   onChange={handleInputChange}
-                  placeholder="Комплетан опис"
+                  placeholder="Kompletan opis"
                   rows={5}
                 />
               </div>
@@ -279,10 +290,10 @@ const ProductDetail = () => {
             {isSaving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Чување...
+                Čuvanje...
               </>
             ) : (
-              isNewProduct ? 'Креирај производ' : 'Ажурирај производ'
+              isNewProduct ? 'Kreiraj proizvod' : 'Ažuriraj proizvod'
             )}
           </Button>
         </form>

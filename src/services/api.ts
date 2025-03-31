@@ -63,7 +63,7 @@ class WooCommerceApi {
     data?: any
   ): Promise<T> {
     if (!this.isAuthenticated) {
-      throw new Error('Not authenticated. Please set your WooCommerce API credentials.');
+      throw new Error('Niste autentifikovani. Unesite svoje WooCommerce API kredencijale.');
     }
 
     try {
@@ -80,37 +80,75 @@ class WooCommerceApi {
       };
 
       if (data && (method === 'POST' || method === 'PUT')) {
-        // Process base64 image data before sending to API
-        if (data.images && data.images.length > 0) {
-          data.images = data.images.map((image: any) => {
-            // If the image source is a base64 data URL, handle it
+        // Pripremi podatke pre slanja API-ju
+        let processedData = { ...data };
+        
+        // Ograniči polja koja se šalju na API
+        if (processedData.images && processedData.images.length > 0) {
+          processedData.images = processedData.images.map((image: any) => {
+            // Ako je izvor slike base64 URL podatak, obradi ga
             if (image.src && image.src.startsWith('data:image')) {
               return {
-                ...image,
-                base64_img: image.src.split(',')[1]  // Extract base64 data without the data:image prefix
+                alt: image.alt || '',
+                base64_img: image.src.split(',')[1]  // Izvuci base64 podatke bez data:image prefiksa
               };
             }
-            return image;
+            // Za postojeće slike, pošalji samo id
+            if (image.id) {
+              return { id: image.id };
+            }
+            // Za slike sa URL-om, pošalji src
+            return { src: image.src, alt: image.alt || '' };
           });
         }
         
-        options.body = JSON.stringify(data);
+        // Proveri i formatíraj numerička polja
+        if (processedData.regular_price) {
+          processedData.regular_price = String(processedData.regular_price);
+        }
+        
+        if (processedData.sale_price) {
+          processedData.sale_price = String(processedData.sale_price);
+        }
+        
+        if (processedData.manage_stock && processedData.stock_quantity) {
+          processedData.stock_quantity = parseInt(String(processedData.stock_quantity), 10);
+        }
+        
+        options.body = JSON.stringify(processedData);
       }
 
+      console.log(`Slanje ${method} zahteva na ${url}`, options);
+      
       const response = await fetch(url, options);
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `API request failed with status ${response.status}`);
+        const errorText = await response.text();
+        let errorMessage = `API zahtev nije uspeo sa statusom ${response.status}`;
+        
+        try {
+          const errorData = JSON.parse(errorText);
+          if (errorData.message) {
+            errorMessage = errorData.message;
+          }
+        } catch (e) {
+          // Ako ne može da se parsira kao JSON, koristi originalni tekst
+          if (errorText) {
+            errorMessage = errorText;
+          }
+        }
+        
+        console.error('API greška:', errorMessage);
+        throw new Error(errorMessage);
       }
 
       return await response.json() as T;
     } catch (error) {
-      console.error('API request failed:', error);
+      console.error('API zahtev nije uspeo:', error);
       if (error instanceof Error) {
-        toast.error(`API Error: ${error.message}`);
+        toast.error(`API Greška: ${error.message}`);
       } else {
-        toast.error('An unknown error occurred with the API request');
+        toast.error('Došlo je do nepoznate greške sa API zahtevom');
       }
       throw error;
     }
@@ -126,11 +164,15 @@ class WooCommerceApi {
   }
 
   async createProduct(productData: any): Promise<any> {
-    return this.request('products', 'POST', productData);
+    // Filtriramo nepotrebna polja koja mogu izazvati probleme sa API-jem
+    const { id, ...filteredData } = productData;
+    return this.request('products', 'POST', filteredData);
   }
 
   async updateProduct(id: number, productData: any): Promise<any> {
-    return this.request(`products/${id}`, 'PUT', productData);
+    // Filtriramo nepotrebna polja koja mogu izazvati probleme sa API-jem
+    const { id: productId, ...filteredData } = productData;
+    return this.request(`products/${id}`, 'PUT', filteredData);
   }
 
   async deleteProduct(id: number): Promise<any> {
@@ -178,12 +220,46 @@ class WooCommerceApi {
         customerStats: Array.isArray(customerStats) ? customerStats : []
       };
     } catch (error) {
-      console.error('Failed to fetch stats:', error);
+      console.error('Nije uspelo preuzimanje statistike:', error);
       return {
         recentOrders: [],
         productStats: [],
         customerStats: []
       };
+    }
+  }
+
+  // Catalog Mode
+  async toggleCatalogMode(enable: boolean): Promise<any> {
+    if (!this.isAuthenticated) {
+      throw new Error('Niste autentifikovani. Unesite svoje WooCommerce API kredencijale.');
+    }
+
+    try {
+      const url = `${this.siteUrl}/wp-json/custom/v1/catalog-mode`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': this.getAuthHeader()
+        },
+        body: JSON.stringify({ enable })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `API zahtev nije uspeo sa statusom ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Greška u postavljanju catalog mode:', error);
+      if (error instanceof Error) {
+        toast.error(`Catalog Mode Greška: ${error.message}`);
+      } else {
+        toast.error('Došlo je do nepoznate greške pri menjanju catalog mode');
+      }
+      throw error;
     }
   }
 }
