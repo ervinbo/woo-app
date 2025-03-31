@@ -26,12 +26,12 @@ const ApiKeySettings: React.FC<ApiKeySettingsProps> = ({
     <div className="space-y-3">
       <div className="space-y-1 mb-2">
         <p className="text-sm text-muted-foreground">
-          Унесите ваше WooCommerce REST API податке за повезивање са вашом продавницом
+          Unesite vaše WooCommerce REST API podatke za povezivanje sa vašom prodavnicom
         </p>
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="site-url">URL сајта</Label>
+        <Label htmlFor="site-url">URL sajta</Label>
         <Input
           id="site-url"
           type="url"
@@ -41,12 +41,12 @@ const ApiKeySettings: React.FC<ApiKeySettingsProps> = ({
           disabled={isLoading}
         />
         <p className="text-xs text-muted-foreground">
-          Комплетан URL до ваше WooCommerce продавнице
+          Kompletan URL do vaše WooCommerce prodavnice
         </p>
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="consumer-key">Потрошачки кључ</Label>
+        <Label htmlFor="consumer-key">Potrošački ključ</Label>
         <Input
           id="consumer-key"
           type="password"
@@ -58,7 +58,7 @@ const ApiKeySettings: React.FC<ApiKeySettingsProps> = ({
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="consumer-secret">Потрошачка тајна</Label>
+        <Label htmlFor="consumer-secret">Potrošačka tajna</Label>
         <Input
           id="consumer-secret"
           type="password"
@@ -68,7 +68,7 @@ const ApiKeySettings: React.FC<ApiKeySettingsProps> = ({
           disabled={isLoading}
         />
         <p className="text-xs text-muted-foreground">
-          Ове кључеве можете генерисати из WooCommerce &gt; Подешавања &gt; Напредно &gt; REST API
+          Ove ključeve možete generisati iz WooCommerce &gt; Podešavanja &gt; Napredno &gt; REST API
         </p>
       </div>
       
@@ -78,7 +78,7 @@ const ApiKeySettings: React.FC<ApiKeySettingsProps> = ({
           disabled={isLoading}
           className="w-full sm:w-auto"
         >
-          Сачувај податке
+          Sačuvaj podatke
         </Button>
         
         <Button
@@ -87,7 +87,7 @@ const ApiKeySettings: React.FC<ApiKeySettingsProps> = ({
           disabled={isLoading || !isConnected}
           className="w-full sm:w-auto"
         >
-          Тестирај везу
+          Testiraj vezu
         </Button>
       </div>
     </div>

@@ -17,9 +17,9 @@ const CatalogModeToggle: React.FC<CatalogModeToggleProps> = ({
   return (
     <div className="flex items-center justify-between py-2">
       <div className="space-y-0.5">
-        <Label htmlFor="catalog-mode">Режим каталога</Label>
+        <Label htmlFor="catalog-mode">Režim kataloga</Label>
         <p className="text-sm text-muted-foreground">
-          Сакриј цене и онемогући куповину
+          Sakrij cene i onemogući kupovinu
         </p>
       </div>
       <Switch

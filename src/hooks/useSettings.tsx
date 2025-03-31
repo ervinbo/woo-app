@@ -45,7 +45,7 @@ export const useSettings = () => {
       try {
         setApiCredentials(JSON.parse(savedCredentials));
       } catch (error) {
-        console.error('Грешка приликом анализе сачуваних веродајница:', error);
+        console.error('Greška prilikom analize sačuvanih kredencijala:', error);
       }
     }
     
@@ -55,11 +55,11 @@ export const useSettings = () => {
 
   const applyThemeColor = (colorValue: string) => {
     const THEME_COLORS = [
-      { name: 'Подразумевана плава', value: 'blue', hsl: '214 80% 51%' },
-      { name: 'Зелена', value: 'green', hsl: '142 76% 36%' },
-      { name: 'Љубичаста', value: 'purple', hsl: '270 76% 40%' },
-      { name: 'Црвена', value: 'red', hsl: '0 84% 60%' },
-      { name: 'Наранџаста', value: 'orange', hsl: '24 100% 50%' },
+      { name: 'Podrazumevana plava', value: 'blue', hsl: '214 80% 51%' },
+      { name: 'Zelena', value: 'green', hsl: '142 76% 36%' },
+      { name: 'Ljubičasta', value: 'purple', hsl: '270 76% 40%' },
+      { name: 'Crvena', value: 'red', hsl: '0 84% 60%' },
+      { name: 'Narandžasta', value: 'orange', hsl: '24 100% 50%' },
     ];
     
     const selectedColor = THEME_COLORS.find(c => c.value === colorValue);
@@ -68,17 +68,42 @@ export const useSettings = () => {
     }
   };
 
-  const handleSetting = (key: string, value: any) => {
+  const handleSetting = async (key: string, value: any) => {
     setIsLoading(true);
     try {
-      // In a real app, we would call the WooCommerce API to update settings
-      // For demo, we'll just use localStorage
+      // Sačuvaj u localStorage za perzistentnost na klijentu
       localStorage.setItem(`woo${key}`, value.toString());
       
-      // Update local state based on the key
+      // Ažuriraj lokalno stanje na osnovu ključa
       switch(key) {
         case 'CatalogMode':
           setCatalogMode(value);
+          
+          // Pozovi WordPress REST API za Catalog Mode
+          if (apiCredentials.siteUrl) {
+            try {
+              const apiUrl = `${apiCredentials.siteUrl}/wp-json/custom/v1/catalog-mode`;
+              const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Basic ${btoa(`${apiCredentials.consumerKey}:${apiCredentials.consumerSecret}`)}`
+                },
+                body: JSON.stringify({ enable: value })
+              });
+              
+              if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `API zahtev nije uspeo sa statusom ${response.status}`);
+              }
+              
+              const data = await response.json();
+              console.log('Wordpress API odgovor:', data);
+            } catch (apiError) {
+              console.error('Greška pri pozivu WordPress API-ja:', apiError);
+              toast.error(`Ažuriranje catalog mode-a na WordPress sajtu nije uspelo: ${apiError instanceof Error ? apiError.message : 'Nepoznata greška'}`);
+            }
+          }
           break;
         case 'StockManagement':
           setStockManagement(value);
@@ -91,10 +116,9 @@ export const useSettings = () => {
           break;
       }
       
-      // Simulate API call
-      toast.success(`Подешавање успешно ажурирано`);
+      toast.success(`Podešavanje uspešno ažurirano`);
     } catch (error) {
-      toast.error('Није успело ажурирање подешавања');
+      toast.error('Nije uspelo ažuriranje podešavanja');
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -118,33 +142,33 @@ export const useSettings = () => {
   const saveCredentials = () => {
     setIsLoading(true);
     try {
-      // Validate inputs
+      // Validiraj unose
       if (!apiCredentials.siteUrl) {
-        toast.error('URL сајта је обавезан');
+        toast.error('URL sajta je obavezan');
         setIsLoading(false);
         return;
       }
       
       if (!apiCredentials.siteUrl.startsWith('https://') && !apiCredentials.siteUrl.startsWith('http://')) {
-        toast.error('URL сајта мора почињати са http:// или https://');
+        toast.error('URL sajta mora počinjati sa http:// ili https://');
         setIsLoading(false);
         return;
       }
       
       if (!apiCredentials.consumerKey || !apiCredentials.consumerSecret) {
-        toast.error('Кориснички кључ и тајна су обавезни');
+        toast.error('Korisnički ključ i tajna su obavezni');
         setIsLoading(false);
         return;
       }
       
-      // Save credentials to API service and localStorage
+      // Sačuvaj kredencijale u API servis i localStorage
       wooCommerceApi.saveCredentials(apiCredentials);
-      toast.success('API веродајнице сачуване успешно');
+      toast.success('API kredencijali sačuvani uspešno');
       
-      // Test connection
+      // Testiraj vezu
       testConnection();
     } catch (error) {
-      toast.error('Није успело чување веродајница');
+      toast.error('Nije uspelo čuvanje kredencijala');
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -154,12 +178,12 @@ export const useSettings = () => {
   const testConnection = async () => {
     setIsLoading(true);
     try {
-      // Try to fetch a small amount of data to test the connection
+      // Pokušaj da dobiješ malu količinu podataka da testiraš vezu
       await wooCommerceApi.getProducts(1, 1);
-      toast.success('Успешна веза! API веродајнице раде.');
+      toast.success('Uspešna veza! API kredencijali rade.');
     } catch (error) {
-      toast.error('Веза није успела. Проверите ваше веродајнице.');
-      console.error('API тест везе није успео:', error);
+      toast.error('Veza nije uspela. Proverite vaše kredencijale.');
+      console.error('API test veze nije uspeo:', error);
     } finally {
       setIsLoading(false);
     }
