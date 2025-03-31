@@ -70,11 +70,11 @@ const Products = () => {
 
     try {
       await wooCommerceApi.deleteProduct(deleteProductId);
-      toast.success('Product deleted successfully');
+      toast.success('Производ је успешно обрисан');
       refetch();
     } catch (error) {
       console.error('Failed to delete product:', error);
-      toast.error('Failed to delete product');
+      toast.error('Грешка при брисању производа');
     } finally {
       setDeleteProductId(null);
     }
@@ -86,7 +86,7 @@ const Products = () => {
 
   if (isLoading) {
     return (
-      <MobileLayout title="Products">
+      <MobileLayout title="Производи">
         <div className="py-10 flex items-center justify-center">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
@@ -96,14 +96,14 @@ const Products = () => {
 
   if (error) {
     return (
-      <MobileLayout title="Products">
+      <MobileLayout title="Производи">
         <div className="py-10 text-center">
-          <p className="text-red-500">Failed to load products</p>
+          <p className="text-red-500">Грешка при учитавању производа</p>
           <Button 
             className="mt-4"
             onClick={() => refetch()}
           >
-            Retry
+            Покушај поново
           </Button>
         </div>
       </MobileLayout>
@@ -111,12 +111,12 @@ const Products = () => {
   }
 
   return (
-    <MobileLayout title="Products">
+    <MobileLayout title="Производи">
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">Products</h2>
+          <h2 className="text-2xl font-bold">Производи</h2>
           <Button size="sm" onClick={handleAddProduct}>
-            <Plus className="mr-1 h-4 w-4" /> New
+            <Plus className="mr-1 h-4 w-4" /> Нови
           </Button>
         </div>
 
@@ -124,7 +124,7 @@ const Products = () => {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
             className="pl-10"
-            placeholder="Search products..."
+            placeholder="Претражи производе..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -211,7 +211,7 @@ const Products = () => {
             ))
           ) : (
             <div className="py-8 text-center text-gray-500">
-              {searchTerm ? 'No products match your search' : 'No products found'}
+              {searchTerm ? 'Нема производа који одговарају претрази' : 'Нема пронађених производа'}
             </div>
           )}
         </div>
@@ -223,15 +223,15 @@ const Products = () => {
               disabled={page === 1}
               onClick={() => setPage(p => Math.max(1, p - 1))}
             >
-              Previous
+              Претходна
             </Button>
-            <span className="text-sm text-gray-500">Page {page}</span>
+            <span className="text-sm text-gray-500">Страна {page}</span>
             <Button
               variant="outline"
               disabled={data.length < perPage}
               onClick={() => setPage(p => p + 1)}
             >
-              Next
+              Следећа
             </Button>
           </div>
         )}
@@ -240,15 +240,15 @@ const Products = () => {
       <AlertDialog open={!!deleteProductId} onOpenChange={(open) => !open && setDeleteProductId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>Да ли сте сигурни?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the product.
+              Ова акција се не може поништити. Производ ће бити трајно обрисан.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Откажи</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteProduct} className="bg-destructive text-destructive-foreground">
-              Delete
+              Обриши
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

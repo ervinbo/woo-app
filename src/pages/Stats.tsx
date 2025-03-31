@@ -91,7 +91,7 @@ const Stats = () => {
           : [];
       } catch (error) {
         console.error('Failed to fetch orders for stats:', error);
-        toast.error('Failed to load statistics data');
+        toast.error('Грешка при учитавању статистичких података');
         throw error;
       }
     },
@@ -123,7 +123,7 @@ const Stats = () => {
     // Convert to array and sort by date
     return Object.entries(dailyRevenue)
       .map(([date, revenue]) => ({
-        date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        date: new Date(date).toLocaleDateString('sr-RS', { month: 'short', day: 'numeric' }),
         revenue: parseFloat(revenue.toFixed(2)),
         orders: dailyOrders[date]
       }))
@@ -184,7 +184,7 @@ const Stats = () => {
       const customerName = 
         order.billing?.first_name && order.billing?.last_name
           ? `${order.billing.first_name} ${order.billing.last_name}`
-          : `Customer #${customerId}`;
+          : `Купац #${customerId}`;
       
       const total = parseFloat(order.total);
       
@@ -218,7 +218,7 @@ const Stats = () => {
     }> = {};
     
     orders.forEach((order: any) => {
-      const country = order.billing?.country || 'Unknown';
+      const country = order.billing?.country || 'Непознато';
       const state = order.billing?.state || '';
       const region = state ? `${country} (${state})` : country;
       
@@ -279,7 +279,7 @@ const Stats = () => {
 
   if (isLoading) {
     return (
-      <MobileLayout title="Statistics">
+      <MobileLayout title="Статистика">
         <div className="py-10 flex items-center justify-center">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
@@ -289,33 +289,33 @@ const Stats = () => {
 
   if (error) {
     return (
-      <MobileLayout title="Statistics">
+      <MobileLayout title="Статистика">
         <div className="py-10 text-center">
-          <p className="text-red-500">Failed to load statistics data</p>
+          <p className="text-red-500">Грешка при учитавању статистичких података</p>
         </div>
       </MobileLayout>
     );
   }
 
   return (
-    <MobileLayout title="Statistics">
+    <MobileLayout title="Статистика">
       <div className="space-y-4">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">Store Statistics</h2>
+          <h2 className="text-2xl font-bold">Статистика продавнице</h2>
           
           <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm" className="flex items-center gap-1">
                 <Filter className="h-4 w-4" />
-                Filters
+                Филтери
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-80">
               <div className="space-y-4">
-                <h3 className="font-medium">Filter Statistics</h3>
+                <h3 className="font-medium">Филтрирај статистику</h3>
                 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Date Range</label>
+                  <label className="text-sm font-medium">Временски период</label>
                   <DatePickerWithRange 
                     date={dateRange} 
                     setDate={setDateRange} 
@@ -323,8 +323,8 @@ const Stats = () => {
                 </div>
                 
                 <div className="flex justify-between pt-2">
-                  <Button variant="outline" size="sm" onClick={resetFilters}>Reset</Button>
-                  <Button size="sm" onClick={applyFilters}>Apply Filters</Button>
+                  <Button variant="outline" size="sm" onClick={resetFilters}>Поништи</Button>
+                  <Button size="sm" onClick={applyFilters}>Примени филтере</Button>
                 </div>
               </div>
             </PopoverContent>
@@ -333,10 +333,10 @@ const Stats = () => {
 
         <Tabs defaultValue="earnings" value={currentTab} onValueChange={setCurrentTab} className="w-full">
           <TabsList className="grid grid-cols-4 mb-4">
-            <TabsTrigger value="earnings">Earnings</TabsTrigger>
-            <TabsTrigger value="products">Products</TabsTrigger>
-            <TabsTrigger value="customers">Customers</TabsTrigger>
-            <TabsTrigger value="geography">Geography</TabsTrigger>
+            <TabsTrigger value="earnings">Зарада</TabsTrigger>
+            <TabsTrigger value="products">Производи</TabsTrigger>
+            <TabsTrigger value="customers">Купци</TabsTrigger>
+            <TabsTrigger value="geography">Географија</TabsTrigger>
           </TabsList>
 
           {/* Earnings Tab */}
@@ -344,10 +344,10 @@ const Stats = () => {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex justify-between items-center">
-                  <span>Revenue Overview</span>
+                  <span>Преглед прихода</span>
                   {dateRange.from && dateRange.to && (
                     <span className="text-sm font-normal text-gray-500">
-                      {format(dateRange.from, 'MMM d, yyyy')} - {format(dateRange.to, 'MMM d, yyyy')}
+                      {format(dateRange.from, 'dd.MM.yyyy')} - {format(dateRange.to, 'dd.MM.yyyy')}
                     </span>
                   )}
                 </CardTitle>
@@ -367,11 +367,11 @@ const Stats = () => {
                         />
                         <YAxis 
                           tick={{ fontSize: 12 }}
-                          tickFormatter={(value) => `$${value}`}
+                          tickFormatter={(value) => `${value} дин`}
                         />
                         <Tooltip 
-                          formatter={(value: any) => [`$${value}`, 'Revenue']}
-                          labelFormatter={(label) => `Date: ${label}`}
+                          formatter={(value: any) => [`${value} дин`, 'Приход']}
+                          labelFormatter={(label) => `Датум: ${label}`}
                         />
                         <Area 
                           type="monotone" 
@@ -384,28 +384,28 @@ const Stats = () => {
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <p className="text-center py-4 text-gray-500">No data available for the selected period</p>
+                  <p className="text-center py-4 text-gray-500">Нема података за изабрани период</p>
                 )}
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Earnings Details</CardTitle>
+                <CardTitle className="text-lg">Детаљи зараде</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-500">Total Revenue</span>
-                    <span className="font-semibold">${orderStats.totalRevenue}</span>
+                    <span className="text-gray-500">Укупан приход</span>
+                    <span className="font-semibold">{orderStats.totalRevenue} дин</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-500">Total Orders</span>
+                    <span className="text-gray-500">Укупно наруџбина</span>
                     <span className="font-semibold">{orderStats.total}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-500">Avg. Order Value</span>
-                    <span className="font-semibold">${orderStats.average}</span>
+                    <span className="text-gray-500">Просечна вредност наруџбине</span>
+                    <span className="font-semibold">{orderStats.average} дин</span>
                   </div>
                 </div>
               </CardContent>
@@ -414,16 +414,16 @@ const Stats = () => {
             {chartData.length > 0 && (
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">Revenue by Date</CardTitle>
+                  <CardTitle className="text-lg">Приход по датуму</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="max-h-72 overflow-y-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Sales Count</TableHead>
-                          <TableHead className="text-right">Earnings</TableHead>
+                          <TableHead>Датум</TableHead>
+                          <TableHead>Број продаја</TableHead>
+                          <TableHead className="text-right">Зарада</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -431,7 +431,7 @@ const Stats = () => {
                           <TableRow key={index}>
                             <TableCell>{item.date}</TableCell>
                             <TableCell>{item.orders}</TableCell>
-                            <TableCell className="text-right font-medium">${item.revenue}</TableCell>
+                            <TableCell className="text-right font-medium">{item.revenue} дин</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -447,7 +447,7 @@ const Stats = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card className="col-span-1 md:col-span-2">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">Products Overview</CardTitle>
+                  <CardTitle className="text-lg">Преглед производа</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {productStats.length > 0 ? (
@@ -469,12 +469,12 @@ const Stats = () => {
                               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                           </Pie>
-                          <Tooltip formatter={(value, name, props) => [`${value} units`, props.payload.name]} />
+                          <Tooltip formatter={(value, name, props) => [`${value} комада`, props.payload.name]} />
                         </PieChart>
                       </ResponsiveContainer>
                     </div>
                   ) : (
-                    <p className="text-center py-4 text-gray-500">No product data available</p>
+                    <p className="text-center py-4 text-gray-500">Нема података о производима</p>
                   )}
                 </CardContent>
               </Card>
@@ -482,16 +482,16 @@ const Stats = () => {
               {productStats.length > 0 && (
                 <Card className="col-span-1 md:col-span-2">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">Product Sales Details</CardTitle>
+                    <CardTitle className="text-lg">Детаљи продаје производа</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="max-h-96 overflow-y-auto">
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Product</TableHead>
-                            <TableHead>Sales Count</TableHead>
-                            <TableHead className="text-right">Revenue</TableHead>
+                            <TableHead>Производ</TableHead>
+                            <TableHead>Број продаја</TableHead>
+                            <TableHead className="text-right">Приход</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -499,7 +499,7 @@ const Stats = () => {
                             <TableRow key={product.id}>
                               <TableCell className="font-medium truncate max-w-48">{product.name}</TableCell>
                               <TableCell>{product.count}</TableCell>
-                              <TableCell className="text-right">${product.revenue.toFixed(2)}</TableCell>
+                              <TableCell className="text-right">{product.revenue.toFixed(2)} дин</TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -516,7 +516,7 @@ const Stats = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card className="col-span-1 md:col-span-2">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">Customer Overview</CardTitle>
+                  <CardTitle className="text-lg">Преглед купаца</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {customerStats.length > 0 ? (
@@ -538,12 +538,12 @@ const Stats = () => {
                               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                           </Pie>
-                          <Tooltip formatter={(value, name, props) => [`$${Number(value).toFixed(2)}`, props.payload.name]} />
+                          <Tooltip formatter={(value, name, props) => [`${Number(value).toFixed(2)} дин`, props.payload.name]} />
                         </PieChart>
                       </ResponsiveContainer>
                     </div>
                   ) : (
-                    <p className="text-center py-4 text-gray-500">No customer data available</p>
+                    <p className="text-center py-4 text-gray-500">Нема података о купцима</p>
                   )}
                 </CardContent>
               </Card>
@@ -551,16 +551,16 @@ const Stats = () => {
               {customerStats.length > 0 && (
                 <Card className="col-span-1 md:col-span-2">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">Customer Details</CardTitle>
+                    <CardTitle className="text-lg">Детаљи о купцима</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="max-h-96 overflow-y-auto">
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Orders</TableHead>
-                            <TableHead className="text-right">Spent</TableHead>
+                            <TableHead>Име</TableHead>
+                            <TableHead>Наруџбине</TableHead>
+                            <TableHead className="text-right">Потрошено</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -568,7 +568,7 @@ const Stats = () => {
                             <TableRow key={customer.id}>
                               <TableCell className="font-medium truncate max-w-48">{customer.name}</TableCell>
                               <TableCell>{customer.orderCount}</TableCell>
-                              <TableCell className="text-right">${customer.revenue.toFixed(2)}</TableCell>
+                              <TableCell className="text-right">{customer.revenue.toFixed(2)} дин</TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -584,7 +584,7 @@ const Stats = () => {
           <TabsContent value="geography" className="space-y-4">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Earnings per Area</CardTitle>
+                <CardTitle className="text-lg">Зарада по подручју</CardTitle>
               </CardHeader>
               <CardContent>
                 {geoStats.length > 0 ? (
@@ -592,7 +592,7 @@ const Stats = () => {
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={geoStats.slice(0, 10)} layout="vertical" margin={{ top: 5, right: 5, bottom: 5, left: 60 }}>
                         <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-                        <XAxis type="number" tickFormatter={(value) => `$${value}`} />
+                        <XAxis type="number" tickFormatter={(value) => `${value} дин`} />
                         <YAxis 
                           type="category" 
                           dataKey="region" 
@@ -600,13 +600,13 @@ const Stats = () => {
                           width={120}
                           tickFormatter={(value) => value.length > 15 ? `${value.substring(0, 15)}...` : value}
                         />
-                        <Tooltip formatter={(value) => [`$${value}`, 'Revenue']} />
+                        <Tooltip formatter={(value) => [`${value} дин`, 'Приход']} />
                         <Bar dataKey="revenue" fill="#8884d8" barSize={20} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <p className="text-center py-4 text-gray-500">No geographical data available</p>
+                  <p className="text-center py-4 text-gray-500">Нема географских података</p>
                 )}
               </CardContent>
             </Card>
@@ -614,16 +614,16 @@ const Stats = () => {
             {geoStats.length > 0 && (
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">Region Sales Details</CardTitle>
+                  <CardTitle className="text-lg">Детаљи продаје по регионима</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="max-h-96 overflow-y-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Region</TableHead>
-                          <TableHead>Orders</TableHead>
-                          <TableHead className="text-right">Revenue</TableHead>
+                          <TableHead>Регион</TableHead>
+                          <TableHead>Наруџбине</TableHead>
+                          <TableHead className="text-right">Приход</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -631,7 +631,7 @@ const Stats = () => {
                           <TableRow key={index}>
                             <TableCell className="font-medium truncate max-w-48">{region.region}</TableCell>
                             <TableCell>{region.orderCount}</TableCell>
-                            <TableCell className="text-right">${region.revenue.toFixed(2)}</TableCell>
+                            <TableCell className="text-right">{region.revenue.toFixed(2)} дин</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>

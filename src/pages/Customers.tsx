@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { wooCommerceApi } from '@/services/api';
@@ -50,7 +51,7 @@ const Customers = () => {
 
   if (isLoading) {
     return (
-      <MobileLayout title="Customers">
+      <MobileLayout title="Купци">
         <div className="py-10 flex items-center justify-center">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
@@ -60,14 +61,14 @@ const Customers = () => {
 
   if (error) {
     return (
-      <MobileLayout title="Customers">
+      <MobileLayout title="Купци">
         <div className="py-10 text-center">
-          <p className="text-red-500">Failed to load customers</p>
+          <p className="text-red-500">Грешка при учитавању купаца</p>
           <Button 
             className="mt-4"
             onClick={() => refetch()}
           >
-            Retry
+            Покушај поново
           </Button>
         </div>
       </MobileLayout>
@@ -75,17 +76,17 @@ const Customers = () => {
   }
 
   return (
-    <MobileLayout title="Customers">
+    <MobileLayout title="Купци">
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">Customers</h2>
+          <h2 className="text-2xl font-bold">Купци</h2>
         </div>
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
             className="pl-10"
-            placeholder="Search customers..."
+            placeholder="Претражи купце..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -106,7 +107,7 @@ const Customers = () => {
                   </div>
                   
                   <p className="text-sm text-gray-500 mb-3">
-                    {customer.billing?.company || 'Personal Account'}
+                    {customer.billing?.company || 'Лични налог'}
                   </p>
                   
                   <div className="flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0">
@@ -121,7 +122,7 @@ const Customers = () => {
                         }}
                       >
                         <Mail className="h-4 w-4 mr-2" />
-                        Email
+                        Имејл
                       </Button>
                     )}
                     
@@ -136,7 +137,7 @@ const Customers = () => {
                         }}
                       >
                         <Phone className="h-4 w-4 mr-2" />
-                        Call
+                        Позови
                       </Button>
                     )}
                   </div>
@@ -145,7 +146,7 @@ const Customers = () => {
             ))
           ) : (
             <div className="py-8 text-center text-gray-500">
-              {searchTerm ? 'No customers match your search' : 'No customers found'}
+              {searchTerm ? 'Нема купаца који одговарају претрази' : 'Нема пронађених купаца'}
             </div>
           )}
         </div>
@@ -157,15 +158,15 @@ const Customers = () => {
               disabled={page === 1}
               onClick={() => setPage(p => Math.max(1, p - 1))}
             >
-              Previous
+              Претходна
             </Button>
-            <span className="text-sm text-gray-500">Page {page}</span>
+            <span className="text-sm text-gray-500">Страна {page}</span>
             <Button
               variant="outline"
               disabled={data.length < perPage}
               onClick={() => setPage(p => p + 1)}
             >
-              Next
+              Следећа
             </Button>
           </div>
         )}

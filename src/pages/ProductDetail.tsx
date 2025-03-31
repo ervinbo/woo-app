@@ -82,7 +82,7 @@ const ProductDetail = () => {
 
   const handleSave = async () => {
     if (!product.name || !product.regular_price) {
-      toast.error('Product name and regular price are required');
+      toast.error('Назив производа и редовна цена су обавезни');
       return;
     }
 
@@ -100,15 +100,15 @@ const ProductDetail = () => {
     try {
       if (isNewProduct) {
         await wooCommerceApi.createProduct(productData);
-        toast.success('Product created successfully');
+        toast.success('Производ је успешно креиран');
       } else {
         await wooCommerceApi.updateProduct(Number(id), productData);
-        toast.success('Product updated successfully');
+        toast.success('Производ је успешно ажуриран');
       }
       navigate('/products');
     } catch (error) {
       console.error('Failed to save product:', error);
-      toast.error('Failed to save product');
+      toast.error('Грешка при чувању производа');
     } finally {
       setIsSaving(false);
     }
@@ -116,7 +116,7 @@ const ProductDetail = () => {
 
   if (isLoading && !isNewProduct) {
     return (
-      <MobileLayout title={isNewProduct ? 'New Product' : 'Edit Product'}>
+      <MobileLayout title={isNewProduct ? 'Нови производ' : 'Измена производа'}>
         <div className="py-10 flex items-center justify-center">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
@@ -126,14 +126,14 @@ const ProductDetail = () => {
 
   if (error && !isNewProduct) {
     return (
-      <MobileLayout title="Product Details">
+      <MobileLayout title="Детаљи производа">
         <div className="py-10 text-center">
-          <p className="text-red-500">Failed to load product details</p>
+          <p className="text-red-500">Грешка при учитавању детаља производа</p>
           <Button 
             className="mt-4"
             onClick={() => navigate('/products')}
           >
-            Back to Products
+            Назад на производе
           </Button>
         </div>
       </MobileLayout>
@@ -141,21 +141,21 @@ const ProductDetail = () => {
   }
 
   return (
-    <MobileLayout title={isNewProduct ? 'New Product' : 'Edit Product'}>
+    <MobileLayout title={isNewProduct ? 'Нови производ' : 'Измена производа'}>
       <div className="space-y-4">
         <Button 
           variant="ghost" 
           className="flex items-center text-gray-500"
           onClick={() => navigate('/products')}
         >
-          <ArrowLeft className="h-4 w-4 mr-1" /> Back to Products
+          <ArrowLeft className="h-4 w-4 mr-1" /> Назад на производе
         </Button>
 
         <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
           <Card>
             <CardContent className="p-4 space-y-4">
               <div className="mb-4">
-                <Label>Product Images</Label>
+                <Label>Слике производа</Label>
                 <ImageUploader 
                   images={product.images}
                   onImagesUpdate={handleImagesUpdate}
@@ -163,20 +163,20 @@ const ProductDetail = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="name">Product Name *</Label>
+                <Label htmlFor="name">Назив производа *</Label>
                 <Input
                   id="name"
                   name="name"
                   value={product.name}
                   onChange={handleInputChange}
-                  placeholder="Product name"
+                  placeholder="Назив производа"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="regular_price">Regular Price *</Label>
+                  <Label htmlFor="regular_price">Редовна цена *</Label>
                   <Input
                     id="regular_price"
                     name="regular_price"
@@ -189,7 +189,7 @@ const ProductDetail = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="sale_price">Sale Price</Label>
+                  <Label htmlFor="sale_price">Акцијска цена</Label>
                   <Input
                     id="sale_price"
                     name="sale_price"
@@ -203,7 +203,7 @@ const ProductDetail = () => {
               </div>
 
               <div className="flex items-center justify-between">
-                <Label htmlFor="on_sale">On Sale</Label>
+                <Label htmlFor="on_sale">На акцији</Label>
                 <Switch 
                   id="on_sale" 
                   checked={product.on_sale}
@@ -212,7 +212,7 @@ const ProductDetail = () => {
               </div>
 
               <div className="flex items-center justify-between">
-                <Label htmlFor="manage_stock">Manage Stock</Label>
+                <Label htmlFor="manage_stock">Управљање залихама</Label>
                 <Switch 
                   id="manage_stock" 
                   checked={product.manage_stock}
@@ -222,7 +222,7 @@ const ProductDetail = () => {
 
               {product.manage_stock && (
                 <div className="space-y-2">
-                  <Label htmlFor="stock_quantity">Stock Quantity</Label>
+                  <Label htmlFor="stock_quantity">Количина залиха</Label>
                   <Input
                     id="stock_quantity"
                     name="stock_quantity"
@@ -235,7 +235,7 @@ const ProductDetail = () => {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="sku">SKU</Label>
+                <Label htmlFor="sku">Шифра производа</Label>
                 <Input
                   id="sku"
                   name="sku"
@@ -246,25 +246,25 @@ const ProductDetail = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="short_description">Short Description</Label>
+                <Label htmlFor="short_description">Кратак опис</Label>
                 <Textarea
                   id="short_description"
                   name="short_description"
                   value={product.short_description}
                   onChange={handleInputChange}
-                  placeholder="Short description"
+                  placeholder="Кратак опис"
                   rows={2}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">Опис</Label>
                 <Textarea
                   id="description"
                   name="description"
                   value={product.description}
                   onChange={handleInputChange}
-                  placeholder="Full description"
+                  placeholder="Комплетан опис"
                   rows={5}
                 />
               </div>
@@ -279,10 +279,10 @@ const ProductDetail = () => {
             {isSaving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
+                Чување...
               </>
             ) : (
-              isNewProduct ? 'Create Product' : 'Update Product'
+              isNewProduct ? 'Креирај производ' : 'Ажурирај производ'
             )}
           </Button>
         </form>

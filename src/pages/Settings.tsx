@@ -46,7 +46,7 @@ const Settings = () => {
               <ShoppingCart className="h-5 w-5 mr-2" />
               WooCommerce Подешавања
             </CardTitle>
-            <CardDescription>Конфигуришите подешавања вашег продајног места</CardDescription>
+            <CardDescription>Конфигуришите подешавања ваше продавнице</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <CatalogModeToggle 

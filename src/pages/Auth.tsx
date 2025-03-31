@@ -26,7 +26,7 @@ const Auth = () => {
     e.preventDefault();
     
     if (!siteUrl || !consumerKey || !consumerSecret) {
-      toast.error('Please fill in all fields');
+      toast.error('Молимо попуните сва поља');
       return;
     }
 
@@ -43,12 +43,12 @@ const Auth = () => {
       // Test connection by fetching products
       await wooCommerceApi.getProducts(1, 1);
       
-      toast.success('Successfully connected to WooCommerce store!');
+      toast.success('Успешно повезано са WooCommerce продавницом!');
       navigate('/dashboard');
     } catch (error) {
       console.error('Connection error:', error);
       wooCommerceApi.clearCredentials();
-      toast.error('Failed to connect. Please check your credentials.');
+      toast.error('Грешка при повезивању. Проверите своје податке.');
     } finally {
       setIsLoading(false);
     }
@@ -61,14 +61,14 @@ const Auth = () => {
           <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-primary/20 p-3 flex items-center justify-center">
             <ShoppingCart className="h-8 w-8 text-primary" />
           </div>
-          <CardTitle className="text-2xl">WooCommerce Store Manager</CardTitle>
-          <CardDescription>Connect to your WooCommerce store</CardDescription>
+          <CardTitle className="text-2xl">WooCommerce Менаџер Продавнице</CardTitle>
+          <CardDescription>Повежите се са вашом WooCommerce продавницом</CardDescription>
         </CardHeader>
         <form onSubmit={handleConnect}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium leading-none" htmlFor="siteUrl">
-                Store URL
+                URL продавнице
               </label>
               <Input
                 id="siteUrl"
@@ -81,7 +81,7 @@ const Auth = () => {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium leading-none" htmlFor="consumerKey">
-                Consumer Key
+                Потрошачки кључ
               </label>
               <Input
                 id="consumerKey"
@@ -94,7 +94,7 @@ const Auth = () => {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium leading-none" htmlFor="consumerSecret">
-                Consumer Secret
+                Потрошачка тајна
               </label>
               <Input
                 id="consumerSecret"
@@ -112,7 +112,7 @@ const Auth = () => {
               className="w-full" 
               disabled={isLoading}
             >
-              {isLoading ? 'Connecting...' : 'Connect to Store'}
+              {isLoading ? 'Повезивање...' : 'Повежи се са продавницом'}
             </Button>
           </CardFooter>
         </form>
