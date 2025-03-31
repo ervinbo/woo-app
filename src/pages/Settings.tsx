@@ -3,7 +3,7 @@ import React from 'react';
 import MobileLayout from '@/components/layout/MobileLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { ShoppingCart, Tag, Package, Truck, Shield, CreditCard, Key } from 'lucide-react';
+import { ShoppingCart, Tag, Package, Key } from 'lucide-react';
 import { useSettings } from '@/hooks/useSettings';
 import { wooCommerceApi } from '@/services/api';
 
@@ -11,9 +11,6 @@ import { wooCommerceApi } from '@/services/api';
 import AppearanceSettings from '@/components/settings/AppearanceSettings';
 import SettingsSection from '@/components/settings/SettingsSection';
 import ProductSettings from '@/components/settings/ProductSettings';
-import ShippingSettings from '@/components/settings/ShippingSettings';
-import CheckoutSettings from '@/components/settings/CheckoutSettings';
-import TaxSettings from '@/components/settings/TaxSettings';
 import ApiKeySettings from '@/components/settings/ApiKeySettings';
 import CatalogModeToggle from '@/components/settings/CatalogModeToggle';
 
@@ -25,22 +22,18 @@ const Settings = () => {
     catalogMode,
     stockManagement,
     reviewsEnabled,
-    orderNotifications,
     lowStockThreshold,
-    shippingNotice,
-    taxIncludedInPrice,
-    guestCheckout,
-    settingsSections,
     apiCredentials,
     handleSetting,
     toggleSection,
     handleCredentialChange,
     saveCredentials,
     testConnection,
+    settingsSections,
   } = useSettings();
 
   return (
-    <MobileLayout title="Settings">
+    <MobileLayout title="Подешавања">
       <div className="space-y-4 pb-20">
         <AppearanceSettings 
           currentTheme={currentTheme}
@@ -51,9 +44,9 @@ const Settings = () => {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center">
               <ShoppingCart className="h-5 w-5 mr-2" />
-              WooCommerce Settings
+              WooCommerce Подешавања
             </CardTitle>
-            <CardDescription>Configure your store settings</CardDescription>
+            <CardDescription>Конфигуришите подешавања вашег продајног места</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <CatalogModeToggle 
@@ -66,7 +59,7 @@ const Settings = () => {
             
             {/* Products section */}
             <SettingsSection 
-              title="Product Settings"
+              title="Подешавања производа"
               icon={<Package className="h-5 w-5 mr-2" />}
               isOpen={settingsSections.products}
               onToggle={() => toggleSection('products')}
@@ -82,58 +75,9 @@ const Settings = () => {
             
             <Separator />
             
-            {/* Shipping section */}
-            <SettingsSection 
-              title="Shipping Settings"
-              icon={<Truck className="h-5 w-5 mr-2" />}
-              isOpen={settingsSections.shipping}
-              onToggle={() => toggleSection('shipping')}
-            >
-              <ShippingSettings 
-                shippingNotice={shippingNotice}
-                isLoading={isLoading}
-                handleSetting={handleSetting}
-              />
-            </SettingsSection>
-            
-            <Separator />
-            
-            {/* Checkout section */}
-            <SettingsSection 
-              title="Checkout Settings"
-              icon={<CreditCard className="h-5 w-5 mr-2" />}
-              isOpen={settingsSections.checkout}
-              onToggle={() => toggleSection('checkout')}
-            >
-              <CheckoutSettings 
-                guestCheckout={guestCheckout}
-                orderNotifications={orderNotifications}
-                isLoading={isLoading}
-                handleSetting={handleSetting}
-              />
-            </SettingsSection>
-            
-            <Separator />
-            
-            {/* Taxes section */}
-            <SettingsSection 
-              title="Tax Settings"
-              icon={<Tag className="h-5 w-5 mr-2" />}
-              isOpen={settingsSections.taxes}
-              onToggle={() => toggleSection('taxes')}
-            >
-              <TaxSettings 
-                taxIncludedInPrice={taxIncludedInPrice}
-                isLoading={isLoading}
-                handleSetting={handleSetting}
-              />
-            </SettingsSection>
-            
-            <Separator />
-            
             {/* API Keys section */}
             <SettingsSection 
-              title="REST API Keys"
+              title="REST API Кључеви"
               icon={<Key className="h-5 w-5 mr-2" />}
               isOpen={settingsSections.api}
               onToggle={() => toggleSection('api')}

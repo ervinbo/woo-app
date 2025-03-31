@@ -23,9 +23,9 @@ const ProductSettings: React.FC<ProductSettingsProps> = ({
     <>
       <div className="flex items-center justify-between py-2">
         <div className="space-y-0.5">
-          <Label htmlFor="stock-management">Stock Management</Label>
+          <Label htmlFor="stock-management">Управљање залихама</Label>
           <p className="text-sm text-muted-foreground">
-            Track inventory and manage stock levels
+            Пратите инвентар и управљајте нивоима залиха
           </p>
         </div>
         <Switch
@@ -38,7 +38,7 @@ const ProductSettings: React.FC<ProductSettingsProps> = ({
       
       {stockManagement && (
         <div className="space-y-2">
-          <Label htmlFor="low-stock-threshold">Low Stock Threshold</Label>
+          <Label htmlFor="low-stock-threshold">Праг ниских залиха</Label>
           <Input
             id="low-stock-threshold"
             type="number"
@@ -48,16 +48,16 @@ const ProductSettings: React.FC<ProductSettingsProps> = ({
             disabled={isLoading}
           />
           <p className="text-xs text-muted-foreground">
-            Get notified when product stock reaches this level
+            Добијте обавештење када залихе производа достигну овај ниво
           </p>
         </div>
       )}
       
       <div className="flex items-center justify-between py-2">
         <div className="space-y-0.5">
-          <Label htmlFor="reviews-enabled">Product Reviews</Label>
+          <Label htmlFor="reviews-enabled">Рецензије производа</Label>
           <p className="text-sm text-muted-foreground">
-            Allow customers to leave product reviews
+            Дозволите купцима да остављају рецензије производа
           </p>
         </div>
         <Switch

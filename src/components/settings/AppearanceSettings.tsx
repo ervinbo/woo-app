@@ -6,11 +6,11 @@ import { Label } from '@/components/ui/label';
 import { toast } from '@/lib/toast';
 
 const THEME_COLORS = [
-  { name: 'Default Blue', value: 'blue', hsl: '214 80% 51%' },
-  { name: 'Green', value: 'green', hsl: '142 76% 36%' },
-  { name: 'Purple', value: 'purple', hsl: '270 76% 40%' },
-  { name: 'Red', value: 'red', hsl: '0 84% 60%' },
-  { name: 'Orange', value: 'orange', hsl: '24 100% 50%' },
+  { name: 'Подразумевана плава', value: 'blue', hsl: '214 80% 51%' },
+  { name: 'Зелена', value: 'green', hsl: '142 76% 36%' },
+  { name: 'Љубичаста', value: 'purple', hsl: '270 76% 40%' },
+  { name: 'Црвена', value: 'red', hsl: '0 84% 60%' },
+  { name: 'Наранџаста', value: 'orange', hsl: '24 100% 50%' },
 ];
 
 interface AppearanceSettingsProps {
@@ -26,7 +26,7 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
     setCurrentTheme(value);
     localStorage.setItem('wooTheme', value);
     applyThemeColor(value);
-    toast.success('Theme updated');
+    toast.success('Тема ажурирана');
   };
 
   const applyThemeColor = (colorValue: string) => {
@@ -39,13 +39,13 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Appearance</CardTitle>
-        <CardDescription>Customize how your dashboard looks</CardDescription>
+        <CardTitle>Изглед</CardTitle>
+        <CardDescription>Прилагодите изглед ваше контролне табле</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
           <div>
-            <h3 className="text-sm font-medium mb-3">Theme Color</h3>
+            <h3 className="text-sm font-medium mb-3">Боја теме</h3>
             <RadioGroup 
               value={currentTheme} 
               onValueChange={handleThemeChange}
