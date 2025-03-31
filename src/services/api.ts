@@ -54,6 +54,10 @@ class WooCommerceApi {
   }
 
   private getApiUrl(endpoint: string): string {
+    // Proveri da li endpoint već sadrži "wp-json"
+    if (endpoint.includes('wp-json')) {
+      return `${this.siteUrl}/${endpoint}`;
+    }
     return `${this.siteUrl}/wp-json/wc/v3/${endpoint}`;
   }
 
@@ -81,40 +85,7 @@ class WooCommerceApi {
 
       if (data && (method === 'POST' || method === 'PUT')) {
         // Pripremi podatke pre slanja API-ju
-        let processedData = { ...data };
-        
-        // Ograniči polja koja se šalju na API
-        if (processedData.images && processedData.images.length > 0) {
-          processedData.images = processedData.images.map((image: any) => {
-            // Ako je izvor slike base64 URL podatak, obradi ga
-            if (image.src && image.src.startsWith('data:image')) {
-              return {
-                alt: image.alt || '',
-                base64_img: image.src.split(',')[1]  // Izvuci base64 podatke bez data:image prefiksa
-              };
-            }
-            // Za postojeće slike, pošalji samo id
-            if (image.id) {
-              return { id: image.id };
-            }
-            // Za slike sa URL-om, pošalji src
-            return { src: image.src, alt: image.alt || '' };
-          });
-        }
-        
-        // Proveri i formatíraj numerička polja
-        if (processedData.regular_price) {
-          processedData.regular_price = String(processedData.regular_price);
-        }
-        
-        if (processedData.sale_price) {
-          processedData.sale_price = String(processedData.sale_price);
-        }
-        
-        if (processedData.manage_stock && processedData.stock_quantity) {
-          processedData.stock_quantity = parseInt(String(processedData.stock_quantity), 10);
-        }
-        
+        const processedData = this.prepareProductData(data);
         options.body = JSON.stringify(processedData);
       }
 
@@ -154,6 +125,67 @@ class WooCommerceApi {
     }
   }
 
+  // Pomoćna funkcija za pripremu podataka proizvoda pre slanja na API
+  private prepareProductData(data: any): any {
+    // Napravi kopiju da ne menjamo originalne podatke
+    const processedData = { ...data };
+    
+    // Ukloni ID iz podataka ako je present - WooCommerce ne dozvoljava slanje ID-a
+    if (processedData.id) {
+      delete processedData.id;
+    }
+    
+    // Obradi slike ako postoje
+    if (processedData.images && processedData.images.length > 0) {
+      processedData.images = processedData.images.map((image: any) => {
+        // Ako je izvor slike base64 URL podatak, obradi ga
+        if (image.src && image.src.startsWith('data:image')) {
+          return {
+            alt: image.alt || '',
+            src: image.src  // Pošalji ceo src, server će ga obraditi
+          };
+        }
+        // Za postojeće slike, pošalji samo id
+        if (image.id) {
+          return { id: image.id };
+        }
+        // Za slike sa URL-om, pošalji src
+        return { src: image.src, alt: image.alt || '' };
+      });
+    }
+    
+    // Proveri i formatiraj cene (uvek kao string)
+    if (processedData.regular_price !== undefined) {
+      processedData.regular_price = String(processedData.regular_price);
+    }
+    
+    if (processedData.sale_price !== undefined && processedData.sale_price !== '') {
+      processedData.sale_price = String(processedData.sale_price);
+    } else if (processedData.sale_price === '') {
+      // Pošalji empty string za uklanjanje akcijske cene
+      processedData.sale_price = '';
+    }
+    
+    // Osiguraj da je stock_quantity broj ako je manage_stock uključen
+    if (processedData.manage_stock && processedData.stock_quantity !== undefined) {
+      processedData.stock_quantity = parseInt(String(processedData.stock_quantity), 10);
+    }
+    
+    // Pripremi kategorije ako postoje
+    if (processedData.categories && Array.isArray(processedData.categories)) {
+      // Ako su kategorije već u obliku objekta sa id, zadrži ih
+      if (processedData.categories.length > 0 && typeof processedData.categories[0] === 'object') {
+        // Ništa ne menjamo
+      } 
+      // Ako su kategorije niz ID-eva, pretvori ih u niz objekata sa ID
+      else if (processedData.categories.length > 0 && typeof processedData.categories[0] === 'number') {
+        processedData.categories = processedData.categories.map((id: number) => ({ id }));
+      }
+    }
+    
+    return processedData;
+  }
+
   // Products
   async getProducts(page = 1, perPage = 10): Promise<any> {
     return this.request(`products?page=${page}&per_page=${perPage}`);
@@ -164,19 +196,20 @@ class WooCommerceApi {
   }
 
   async createProduct(productData: any): Promise<any> {
-    // Filtriramo nepotrebna polja koja mogu izazvati probleme sa API-jem
-    const { id, ...filteredData } = productData;
-    return this.request('products', 'POST', filteredData);
+    return this.request('products', 'POST', productData);
   }
 
   async updateProduct(id: number, productData: any): Promise<any> {
-    // Filtriramo nepotrebna polja koja mogu izazvati probleme sa API-jem
-    const { id: productId, ...filteredData } = productData;
-    return this.request(`products/${id}`, 'PUT', filteredData);
+    return this.request(`products/${id}`, 'PUT', productData);
   }
 
   async deleteProduct(id: number): Promise<any> {
     return this.request(`products/${id}`, 'DELETE');
+  }
+
+  // Categories
+  async getCategories(): Promise<any> {
+    return this.request('products/categories?per_page=100');
   }
 
   // Orders

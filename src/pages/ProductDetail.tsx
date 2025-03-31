@@ -13,12 +13,30 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import ImageUploader from '@/components/product/ImageUploader';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+// Definišemo interfejs za kategoriju
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  parent?: number;
+  count?: number;
+}
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isNewProduct = id === 'new';
   const [isSaving, setIsSaving] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
 
   const [product, setProduct] = useState({
     name: '',
@@ -31,7 +49,7 @@ const ProductDetail = () => {
     manage_stock: false,
     stock_quantity: '',
     sku: '',
-    categories: [],
+    categories: [] as Array<{ id: number, name?: string }>,
     images: [] as Array<{ id?: number, src: string, alt?: string }>
   });
 
@@ -40,6 +58,28 @@ const ProductDetail = () => {
       navigate('/');
     }
   }, [navigate]);
+
+  // Učitaj kategorije
+  useEffect(() => {
+    const fetchCategories = async () => {
+      if (!wooCommerceApi.getAuthStatus()) return;
+      
+      setIsLoadingCategories(true);
+      try {
+        const fetchedCategories = await wooCommerceApi.getCategories();
+        if (Array.isArray(fetchedCategories)) {
+          setCategories(fetchedCategories);
+        }
+      } catch (error) {
+        console.error('Greška pri učitavanju kategorija:', error);
+        toast.error('Nije uspelo učitavanje kategorija proizvoda');
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const { isLoading, error } = useQuery({
     queryKey: ['product', id],
@@ -52,7 +92,8 @@ const ProductDetail = () => {
           regular_price: data.regular_price || '',
           sale_price: data.sale_price || '',
           stock_quantity: data.stock_quantity ? String(data.stock_quantity) : '',
-          images: data.images || []
+          images: data.images || [],
+          categories: data.categories || []
         });
         return data;
       } catch (error) {
@@ -80,34 +121,42 @@ const ProductDetail = () => {
     });
   };
 
+  const handleCategoryChange = (categoryId: string) => {
+    // Konvertuj string id u broj
+    const catId = parseInt(categoryId, 10);
+    
+    // Nađi kategoriju po ID-u
+    const selectedCategory = categories.find(cat => cat.id === catId);
+    
+    if (selectedCategory) {
+      setProduct({
+        ...product,
+        categories: [{ id: catId, name: selectedCategory.name }]
+      });
+    }
+  };
+
   const handleSave = async () => {
     if (!product.name || !product.regular_price) {
       toast.error('Naziv proizvoda i redovna cena su obavezni');
       return;
     }
 
-    // Pripremi podatke za slanje API-ju
-    const productData = {
-      ...product,
-      // Osiguraj da su cene stringovi
-      regular_price: String(product.regular_price),
-      sale_price: product.sale_price ? String(product.sale_price) : '',
-      // Osiguraj da je količina zaliha broj ako je prisutna
-      stock_quantity: product.stock_quantity ? parseInt(product.stock_quantity, 10) : null,
-      // Osiguraj da kategorije budu pravilno formatirane (ako postoje)
-      categories: Array.isArray(product.categories) && product.categories.length > 0 
-        ? product.categories 
-        : undefined
-    };
-
     setIsSaving(true);
 
     try {
+      // Pripremi kategorije za slanje
+      const preparedProduct = {
+        ...product,
+        // Osiguraj da su kategorije u ispravnom formatu za API
+        categories: product.categories.map(cat => ({ id: cat.id }))
+      };
+
       if (isNewProduct) {
-        await wooCommerceApi.createProduct(productData);
+        await wooCommerceApi.createProduct(preparedProduct);
         toast.success('Proizvod je uspešno kreiran');
       } else {
-        await wooCommerceApi.updateProduct(Number(id), productData);
+        await wooCommerceApi.updateProduct(Number(id), preparedProduct);
         toast.success('Proizvod je uspešno ažuriran');
       }
       navigate('/products');
@@ -183,6 +232,31 @@ const ProductDetail = () => {
                   placeholder="Naziv proizvoda"
                   required
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="category">Kategorija</Label>
+                <Select 
+                  value={product.categories.length > 0 ? String(product.categories[0].id) : ''} 
+                  onValueChange={handleCategoryChange}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Izaberite kategoriju" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {isLoadingCategories ? (
+                      <SelectItem value="loading" disabled>Učitavanje kategorija...</SelectItem>
+                    ) : categories.length === 0 ? (
+                      <SelectItem value="none" disabled>Nema dostupnih kategorija</SelectItem>
+                    ) : (
+                      categories.map(category => (
+                        <SelectItem key={category.id} value={String(category.id)}>
+                          {category.name}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
