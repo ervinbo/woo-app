@@ -32,7 +32,7 @@ const OrderDetail = () => {
     queryKey: ['order', id],
     queryFn: async () => {
       try {
-        const data = await wooCommerceApi.getOrder(Number(id));
+        const data = await wooCommerceApi.orders.get(Number(id));
         setStatus(data.status);
         return data;
       } catch (error) {
@@ -47,7 +47,7 @@ const OrderDetail = () => {
   const handleStatusChange = async (newStatus: string) => {
     setIsUpdating(true);
     try {
-      await wooCommerceApi.updateOrderStatus(Number(id), newStatus);
+      await wooCommerceApi.orders.updateStatus(Number(id), newStatus);
       setStatus(newStatus);
       toast.success('Order status updated successfully');
       refetch();

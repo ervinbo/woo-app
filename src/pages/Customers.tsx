@@ -26,7 +26,7 @@ const Customers = () => {
     queryKey: ['customers', page],
     queryFn: async () => {
       try {
-        return await wooCommerceApi.getCustomers(page, perPage);
+        return await wooCommerceApi.customers.getAll(page, perPage);
       } catch (error) {
         console.error('Failed to fetch customers:', error);
         throw error;

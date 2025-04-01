@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { wooCommerceApi } from '@/services/api';
@@ -21,7 +20,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// Definišemo interfejs za kategoriju
 interface Category {
   id: number;
   name: string;
@@ -59,14 +57,13 @@ const ProductDetail = () => {
     }
   }, [navigate]);
 
-  // Učitaj kategorije
   useEffect(() => {
     const fetchCategories = async () => {
       if (!wooCommerceApi.getAuthStatus()) return;
       
       setIsLoadingCategories(true);
       try {
-        const fetchedCategories = await wooCommerceApi.getCategories();
+        const fetchedCategories = await wooCommerceApi.products.getCategories();
         if (Array.isArray(fetchedCategories)) {
           setCategories(fetchedCategories);
         }
@@ -86,7 +83,7 @@ const ProductDetail = () => {
     queryFn: async () => {
       if (isNewProduct) return null;
       try {
-        const data = await wooCommerceApi.getProduct(Number(id));
+        const data = await wooCommerceApi.products.get(Number(id));
         setProduct({
           ...data,
           regular_price: data.regular_price || '',
@@ -122,10 +119,8 @@ const ProductDetail = () => {
   };
 
   const handleCategoryChange = (categoryId: string) => {
-    // Konvertuj string id u broj
     const catId = parseInt(categoryId, 10);
     
-    // Nađi kategoriju po ID-u
     const selectedCategory = categories.find(cat => cat.id === catId);
     
     if (selectedCategory) {
@@ -145,18 +140,16 @@ const ProductDetail = () => {
     setIsSaving(true);
 
     try {
-      // Pripremi kategorije za slanje
       const preparedProduct = {
         ...product,
-        // Osiguraj da su kategorije u ispravnom formatu za API
         categories: product.categories.map(cat => ({ id: cat.id }))
       };
 
       if (isNewProduct) {
-        await wooCommerceApi.createProduct(preparedProduct);
+        await wooCommerceApi.products.create(preparedProduct);
         toast.success('Proizvod je uspešno kreiran');
       } else {
-        await wooCommerceApi.updateProduct(Number(id), preparedProduct);
+        await wooCommerceApi.products.update(Number(id), preparedProduct);
         toast.success('Proizvod je uspešno ažuriran');
       }
       navigate('/products');
@@ -164,7 +157,6 @@ const ProductDetail = () => {
       console.error('Greška pri čuvanju proizvoda:', error);
       
       if (error instanceof Error) {
-        // Prikaži specifičnu poruku o grešci
         toast.error(`Greška: ${error.message}`);
       } else {
         toast.error('Greška pri čuvanju proizvoda');

@@ -5,7 +5,7 @@ import { wooCommerceApi } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from '@/lib/toast'; // Updated import
+import { toast } from '@/lib/toast';
 import { ShoppingCart } from 'lucide-react';
 
 const Auth = () => {
@@ -41,7 +41,7 @@ const Auth = () => {
       });
 
       // Test connection by fetching products
-      await wooCommerceApi.getProducts(1, 1);
+      await wooCommerceApi.products.getAll(1, 1);
       
       toast.success('Успешно повезано са WooCommerce продавницом!');
       navigate('/dashboard');
