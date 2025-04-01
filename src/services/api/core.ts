@@ -1,4 +1,3 @@
-
 import { toast } from "@/lib/toast";
 import { WooCommerceCredentials } from './types';
 import { productsService } from './products';
@@ -55,7 +54,7 @@ export class WooCommerceApi {
   }
 
   getApiUrl(endpoint: string): string {
-    // Proveri da li endpoint već sadrži "wp-json"
+    // Check if endpoint already contains "wp-json"
     if (endpoint.includes('wp-json')) {
       return `${this.siteUrl}/${endpoint}`;
     }
@@ -85,9 +84,7 @@ export class WooCommerceApi {
       };
 
       if (data && (method === 'POST' || method === 'PUT')) {
-        // Pripremi podatke pre slanja API-ju
-        const processedData = productsService.prepareProductData(data);
-        options.body = JSON.stringify(processedData);
+        options.body = JSON.stringify(data);
       }
 
       console.log(`Slanje ${method} zahteva na ${url}`, options);
@@ -104,7 +101,7 @@ export class WooCommerceApi {
             errorMessage = errorData.message;
           }
         } catch (e) {
-          // Ako ne može da se parsira kao JSON, koristi originalni tekst
+          // If it can't be parsed as JSON, use the original text
           if (errorText) {
             errorMessage = errorText;
           }

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { wooCommerceApi } from '@/services/api';
@@ -148,11 +149,12 @@ const ProductDetail = () => {
       if (isNewProduct) {
         await wooCommerceApi.products.create(preparedProduct);
         toast.success('Proizvod je uspešno kreiran');
+        navigate('/products');
       } else {
         await wooCommerceApi.products.update(Number(id), preparedProduct);
         toast.success('Proizvod je uspešno ažuriran');
+        navigate('/products');
       }
-      navigate('/products');
     } catch (error) {
       console.error('Greška pri čuvanju proizvoda:', error);
       
