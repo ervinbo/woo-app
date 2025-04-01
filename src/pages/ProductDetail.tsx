@@ -21,23 +21,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-interface Category {
-  id: number;
-  name: string;
-  slug: string;
-  parent?: number;
-  count?: number;
-}
-
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isNewProduct = id === 'new';
   const [isSaving, setIsSaving] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Array<{ id: number; name: string; }>>([]); 
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
 
-  // Simplified product state
+  // Simple product state with required fields
   const [product, setProduct] = useState({
     name: '',
     regular_price: '',
@@ -56,38 +48,37 @@ const ProductDetail = () => {
   useEffect(() => {
     if (!wooCommerceApi.getAuthStatus()) {
       navigate('/');
+      return;
     }
-  }, [navigate]);
-
-  // Load categories
-  useEffect(() => {
+    
+    // Load categories when component mounts
     const fetchCategories = async () => {
-      if (!wooCommerceApi.getAuthStatus()) return;
-      
       setIsLoadingCategories(true);
       try {
-        const fetchedCategories = await wooCommerceApi.products.getCategories();
-        if (Array.isArray(fetchedCategories)) {
-          setCategories(fetchedCategories);
+        const response = await wooCommerceApi.products.getCategories();
+        console.log("Categories loaded:", response);
+        if (Array.isArray(response)) {
+          setCategories(response);
         }
       } catch (error) {
-        console.error('Greška pri učitavanju kategorija:', error);
-        toast.error('Nije uspelo učitavanje kategorija proizvoda');
+        console.error('Error loading categories:', error);
+        toast.error('Failed to load product categories');
       } finally {
         setIsLoadingCategories(false);
       }
     };
 
     fetchCategories();
-  }, []);
+  }, [navigate]);
 
-  // Load product if editing
+  // Load product if editing an existing one
   const { isLoading, error } = useQuery({
     queryKey: ['product', id],
     queryFn: async () => {
       if (isNewProduct) return null;
       try {
         const data = await wooCommerceApi.products.get(Number(id));
+        console.log("Loaded product:", data);
         setProduct({
           ...data,
           regular_price: data.regular_price || '',
@@ -98,7 +89,7 @@ const ProductDetail = () => {
         });
         return data;
       } catch (error) {
-        console.error('Greška pri učitavanju proizvoda:', error);
+        console.error('Error loading product:', error);
         throw error;
       }
     },
@@ -132,35 +123,42 @@ const ProductDetail = () => {
     }
   };
 
-  // Simplified save function
+  // Simplified save function with better error handling
   const handleSave = async () => {
-    if (!product.name || !product.regular_price) {
-      toast.error('Naziv proizvoda i redovna cena su obavezni');
+    if (!product.name) {
+      toast.error('Product name is required');
+      return;
+    }
+
+    if (!product.regular_price) {
+      toast.error('Regular price is required');
       return;
     }
 
     setIsSaving(true);
     console.log('Saving product...', isNewProduct ? 'Creating new' : 'Updating existing');
+    console.log('Product data:', product);
 
     try {
       if (isNewProduct) {
-        console.log('Creating new product with data:', product);
+        // Create new product
         const result = await wooCommerceApi.products.create(product);
         console.log('Create product result:', result);
-        toast.success('Proizvod je uspešno kreiran');
-      } else {
-        console.log('Updating product with ID:', id);
+        toast.success('Product created successfully');
+        navigate('/products');
+      } else if (id) {
+        // Update existing product
         await wooCommerceApi.products.update(Number(id), product);
-        toast.success('Proizvod je uspešno ažuriran');
+        toast.success('Product updated successfully');
+        navigate('/products');
       }
-      navigate('/products');
     } catch (error) {
-      console.error('Greška pri čuvanju proizvoda:', error);
+      console.error('Error saving product:', error);
       
       if (error instanceof Error) {
-        toast.error(`Greška: ${error.message}`);
+        toast.error(`Error: ${error.message}`);
       } else {
-        toast.error('Greška pri čuvanju proizvoda');
+        toast.error('Failed to save product');
       }
     } finally {
       setIsSaving(false);
@@ -170,7 +168,7 @@ const ProductDetail = () => {
   // Loading state
   if (isLoading && !isNewProduct) {
     return (
-      <MobileLayout title={isNewProduct ? 'Novi proizvod' : 'Izmena proizvoda'}>
+      <MobileLayout title={isNewProduct ? 'New Product' : 'Edit Product'}>
         <div className="py-10 flex items-center justify-center">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
@@ -181,14 +179,14 @@ const ProductDetail = () => {
   // Error state
   if (error && !isNewProduct) {
     return (
-      <MobileLayout title="Detalji proizvoda">
+      <MobileLayout title="Product Details">
         <div className="py-10 text-center">
-          <p className="text-red-500">Greška pri učitavanju detalja proizvoda</p>
+          <p className="text-red-500">Error loading product details</p>
           <Button 
             className="mt-4"
             onClick={() => navigate('/products')}
           >
-            Nazad na proizvode
+            Back to products
           </Button>
         </div>
       </MobileLayout>
@@ -197,53 +195,56 @@ const ProductDetail = () => {
 
   // Render product form
   return (
-    <MobileLayout title={isNewProduct ? 'Novi proizvod' : 'Izmena proizvoda'}>
+    <MobileLayout title={isNewProduct ? 'New Product' : 'Edit Product'}>
       <div className="space-y-4">
         <Button 
           variant="ghost" 
           className="flex items-center text-gray-500"
           onClick={() => navigate('/products')}
         >
-          <ArrowLeft className="h-4 w-4 mr-1" /> Nazad na proizvode
+          <ArrowLeft className="h-4 w-4 mr-1" /> Back to products
         </Button>
 
         <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
           <Card>
             <CardContent className="p-4 space-y-4">
+              {/* Product Images */}
               <div className="mb-4">
-                <Label>Slike proizvoda</Label>
+                <Label>Product Images</Label>
                 <ImageUploader 
                   images={product.images}
                   onImagesUpdate={handleImagesUpdate}
                 />
               </div>
 
+              {/* Basic Info */}
               <div className="space-y-2">
-                <Label htmlFor="name">Naziv proizvoda *</Label>
+                <Label htmlFor="name">Product Name *</Label>
                 <Input
                   id="name"
                   name="name"
                   value={product.name}
                   onChange={handleInputChange}
-                  placeholder="Naziv proizvoda"
+                  placeholder="Product name"
                   required
                 />
               </div>
 
+              {/* Category */}
               <div className="space-y-2">
-                <Label htmlFor="category">Kategorija</Label>
+                <Label htmlFor="category">Category</Label>
                 <Select 
                   value={product.categories.length > 0 ? String(product.categories[0].id) : ''} 
                   onValueChange={handleCategoryChange}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Izaberite kategoriju" />
+                    <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
                     {isLoadingCategories ? (
-                      <SelectItem value="loading" disabled>Učitavanje kategorija...</SelectItem>
+                      <SelectItem value="loading" disabled>Loading categories...</SelectItem>
                     ) : categories.length === 0 ? (
-                      <SelectItem value="none" disabled>Nema dostupnih kategorija</SelectItem>
+                      <SelectItem value="none" disabled>No categories available</SelectItem>
                     ) : (
                       categories.map(category => (
                         <SelectItem key={category.id} value={String(category.id)}>
@@ -255,9 +256,10 @@ const ProductDetail = () => {
                 </Select>
               </div>
 
+              {/* Pricing */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="regular_price">Redovna cena *</Label>
+                  <Label htmlFor="regular_price">Regular Price *</Label>
                   <Input
                     id="regular_price"
                     name="regular_price"
@@ -270,7 +272,7 @@ const ProductDetail = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="sale_price">Akcijska cena</Label>
+                  <Label htmlFor="sale_price">Sale Price</Label>
                   <Input
                     id="sale_price"
                     name="sale_price"
@@ -283,8 +285,9 @@ const ProductDetail = () => {
                 </div>
               </div>
 
+              {/* Inventory */}
               <div className="flex items-center justify-between">
-                <Label htmlFor="manage_stock">Upravljanje zalihama</Label>
+                <Label htmlFor="manage_stock">Manage Stock</Label>
                 <Switch 
                   id="manage_stock" 
                   checked={product.manage_stock}
@@ -294,7 +297,7 @@ const ProductDetail = () => {
 
               {product.manage_stock && (
                 <div className="space-y-2">
-                  <Label htmlFor="stock_quantity">Količina zaliha</Label>
+                  <Label htmlFor="stock_quantity">Stock Quantity</Label>
                   <Input
                     id="stock_quantity"
                     name="stock_quantity"
@@ -306,8 +309,9 @@ const ProductDetail = () => {
                 </div>
               )}
 
+              {/* SKU */}
               <div className="space-y-2">
-                <Label htmlFor="sku">Šifra proizvoda</Label>
+                <Label htmlFor="sku">SKU</Label>
                 <Input
                   id="sku"
                   name="sku"
@@ -317,32 +321,34 @@ const ProductDetail = () => {
                 />
               </div>
 
+              {/* Descriptions */}
               <div className="space-y-2">
-                <Label htmlFor="short_description">Kratak opis</Label>
+                <Label htmlFor="short_description">Short Description</Label>
                 <Textarea
                   id="short_description"
                   name="short_description"
                   value={product.short_description}
                   onChange={handleInputChange}
-                  placeholder="Kratak opis"
+                  placeholder="Short description"
                   rows={2}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Opis</Label>
+                <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
                   name="description"
                   value={product.description}
                   onChange={handleInputChange}
-                  placeholder="Kompletan opis"
+                  placeholder="Full description"
                   rows={5}
                 />
               </div>
             </CardContent>
           </Card>
           
+          {/* Save Button */}
           <Button 
             type="submit" 
             className="w-full" 
@@ -351,10 +357,10 @@ const ProductDetail = () => {
             {isSaving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Čuvanje...
+                Saving...
               </>
             ) : (
-              isNewProduct ? 'Kreiraj proizvod' : 'Ažuriraj proizvod'
+              isNewProduct ? 'Create Product' : 'Update Product'
             )}
           </Button>
         </form>

@@ -2,8 +2,9 @@
 import { WooCommerceApi } from './core';
 
 export const productsService = {
-  // Simplified product data preparation
+  // Simple product data preparation
   prepareProductData(data: any): any {
+    // Create a clean copy
     const processedData = { ...data };
     
     // Remove ID for new products
@@ -11,23 +12,7 @@ export const productsService = {
       delete processedData.id;
     }
     
-    // Process images if they exist
-    if (processedData.images && processedData.images.length > 0) {
-      processedData.images = processedData.images.map((image: any) => {
-        // For base64 images
-        if (image.src && image.src.startsWith('data:image')) {
-          return { alt: image.alt || '', src: image.src };
-        }
-        // For existing images
-        if (image.id) {
-          return { id: image.id };
-        }
-        // For images with URL
-        return { src: image.src, alt: image.alt || '' };
-      });
-    }
-    
-    // Format prices as strings
+    // Handle basic price formatting
     if (processedData.regular_price !== undefined) {
       processedData.regular_price = String(processedData.regular_price);
     }
@@ -36,22 +21,16 @@ export const productsService = {
       processedData.sale_price = processedData.sale_price === '' ? '' : String(processedData.sale_price);
     }
     
-    // Convert stock quantity to number if manage_stock is enabled
+    // Handle stock quantity
     if (processedData.manage_stock && processedData.stock_quantity !== undefined) {
       processedData.stock_quantity = parseInt(String(processedData.stock_quantity), 10);
     }
     
-    // Simplify categories handling
-    if (processedData.categories && Array.isArray(processedData.categories)) {
-      processedData.categories = processedData.categories.map((cat: any) => 
-        typeof cat === 'number' ? { id: cat } : { id: cat.id }
-      );
-    }
-    
+    console.log("Prepared product data:", processedData);
     return processedData;
   },
 
-  // Product methods
+  // Basic product API methods
   async getProducts(api: WooCommerceApi, page = 1, perPage = 10): Promise<any> {
     return api.request(`products?page=${page}&per_page=${perPage}`);
   },
@@ -61,12 +40,16 @@ export const productsService = {
   },
 
   async createProduct(api: WooCommerceApi, productData: any): Promise<any> {
+    console.log("Creating product with data:", productData);
     const processedData = this.prepareProductData(productData);
+    console.log("Processed data for create:", processedData);
     return api.request('products', 'POST', processedData);
   },
 
   async updateProduct(api: WooCommerceApi, id: number, productData: any): Promise<any> {
+    console.log("Updating product with ID:", id);
     const processedData = this.prepareProductData(productData);
+    console.log("Processed data for update:", processedData);
     return api.request(`products/${id}`, 'PUT', processedData);
   },
 

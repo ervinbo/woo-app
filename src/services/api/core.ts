@@ -17,7 +17,6 @@ export class WooCommerceApi {
     this.loadCredentials();
   }
 
-  // Core authentication methods
   loadCredentials(): void {
     const savedCredentials = localStorage.getItem('woocommerce_credentials');
     if (savedCredentials) {
@@ -54,11 +53,14 @@ export class WooCommerceApi {
   }
 
   getApiUrl(endpoint: string): string {
-    // Check if endpoint already contains "wp-json"
+    // Make sure we handle URLs correctly
     if (endpoint.includes('wp-json')) {
       return `${this.siteUrl}/${endpoint}`;
     }
-    return `${this.siteUrl}/wp-json/wc/v3/${endpoint}`;
+    
+    // Make sure URL doesn't have double slashes
+    const baseUrl = this.siteUrl.endsWith('/') ? this.siteUrl.slice(0, -1) : this.siteUrl;
+    return `${baseUrl}/wp-json/wc/v3/${endpoint}`;
   }
 
   async request<T>(
@@ -67,7 +69,7 @@ export class WooCommerceApi {
     data?: any
   ): Promise<T> {
     if (!this.isAuthenticated) {
-      throw new Error('Niste autentifikovani. Unesite svoje WooCommerce API kredencijale.');
+      throw new Error('Not authenticated. Please enter your WooCommerce API credentials.');
     }
 
     try {
@@ -80,50 +82,54 @@ export class WooCommerceApi {
       const options: RequestInit = {
         method,
         headers,
-        credentials: 'same-origin',
+        // Don't include credentials for cross-origin requests
+        mode: 'cors',
       };
 
       if (data && (method === 'POST' || method === 'PUT')) {
         options.body = JSON.stringify(data);
       }
 
-      console.log(`Slanje ${method} zahteva na ${url}`, options);
+      console.log(`Sending ${method} request to ${url}`, options);
       
       const response = await fetch(url, options);
+      console.log(`Response status: ${response.status}`);
+      
+      const responseText = await response.text();
+      console.log(`Response text: ${responseText}`);
       
       if (!response.ok) {
-        const errorText = await response.text();
-        let errorMessage = `API zahtev nije uspeo sa statusom ${response.status}`;
+        let errorMessage = `API request failed with status ${response.status}`;
         
         try {
-          const errorData = JSON.parse(errorText);
+          const errorData = JSON.parse(responseText);
           if (errorData.message) {
             errorMessage = errorData.message;
           }
         } catch (e) {
-          // If it can't be parsed as JSON, use the original text
-          if (errorText) {
-            errorMessage = errorText;
+          // Use the text response if it's not JSON
+          if (responseText) {
+            errorMessage = responseText;
           }
         }
         
-        console.error('API greška:', errorMessage);
+        console.error('API error:', errorMessage);
         throw new Error(errorMessage);
       }
 
-      return await response.json() as T;
+      // Parse as JSON only if there's content
+      return responseText ? JSON.parse(responseText) as T : {} as T;
     } catch (error) {
-      console.error('API zahtev nije uspeo:', error);
+      console.error('API request failed:', error);
       if (error instanceof Error) {
-        toast.error(`API Greška: ${error.message}`);
+        toast.error(`API Error: ${error.message}`);
       } else {
-        toast.error('Došlo je do nepoznate greške sa API zahtevom');
+        toast.error('An unknown error occurred with the API request');
       }
       throw error;
     }
   }
 
-  // Service properties to expose methods from service modules
   get products() {
     return {
       getAll: (page = 1, perPage = 10) => productsService.getProducts(this, page, perPage),
@@ -133,58 +139,6 @@ export class WooCommerceApi {
       delete: (id: number) => productsService.deleteProduct(this, id),
       getCategories: () => productsService.getCategories(this)
     };
-  }
-
-  get orders() {
-    return {
-      getAll: (page = 1, perPage = 10, status = '') => ordersService.getOrders(this, page, perPage, status),
-      get: (id: number) => ordersService.getOrder(this, id),
-      updateStatus: (id: number, status: string) => ordersService.updateOrderStatus(this, id, status)
-    };
-  }
-
-  get customers() {
-    return {
-      getAll: (page = 1, perPage = 10) => customersService.getCustomers(this, page, perPage),
-      get: (id: number) => customersService.getCustomer(this, id)
-    };
-  }
-
-  get stats() {
-    return {
-      getAll: () => statsService.getStats(this)
-    };
-  }
-
-  get settings() {
-    return {
-      toggleCatalogMode: (enable: boolean) => settingsService.toggleCatalogMode(this, enable)
-    };
-  }
-
-  // Legacy methods to maintain backward compatibility
-  getProducts(page = 1, perPage = 10) {
-    return this.products.getAll(page, perPage);
-  }
-
-  getProduct(id: number) {
-    return this.products.get(id);
-  }
-
-  createProduct(productData: any) {
-    return this.products.create(productData);
-  }
-
-  updateProduct(id: number, productData: any) {
-    return this.products.update(id, productData);
-  }
-
-  deleteProduct(id: number) {
-    return this.products.delete(id);
-  }
-
-  getCategories() {
-    return this.products.getCategories();
   }
 
   getOrders(page = 1, perPage = 10, status = '') {
@@ -213,6 +167,30 @@ export class WooCommerceApi {
 
   toggleCatalogMode(enable: boolean) {
     return this.settings.toggleCatalogMode(enable);
+  }
+
+  getProducts(page = 1, perPage = 10) {
+    return this.products.getAll(page, perPage);
+  }
+
+  getProduct(id: number) {
+    return this.products.get(id);
+  }
+
+  createProduct(productData: any) {
+    return this.products.create(productData);
+  }
+
+  updateProduct(id: number, productData: any) {
+    return this.products.update(id, productData);
+  }
+
+  deleteProduct(id: number) {
+    return this.products.delete(id);
+  }
+
+  getCategories() {
+    return this.products.getCategories();
   }
 }
 
