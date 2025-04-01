@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { wooCommerceApi } from '@/services/api';
+import { wooCommerceApi, ordersService } from '@/services/api';
 import MobileLayout from '@/components/layout/MobileLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,7 +33,7 @@ const Orders = () => {
     queryFn: async () => {
       try {
         const actualStatusFilter = statusFilter === 'all' ? '' : statusFilter;
-        return await wooCommerceApi.getOrders(page, perPage, actualStatusFilter);
+        return await ordersService.getOrders(page, perPage, actualStatusFilter);
       } catch (error) {
         console.error('Failed to fetch orders:', error);
         throw error;

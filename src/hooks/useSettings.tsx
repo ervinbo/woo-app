@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from '@/lib/toast';
-import { wooCommerceApi, WooCommerceCredentials } from '@/services/api';
+import { wooCommerceApi, WooCommerceCredentials, settingsService } from '@/services/api';
 
 export const useSettings = () => {
   const [currentTheme, setCurrentTheme] = useState('blue');
@@ -82,23 +81,7 @@ export const useSettings = () => {
           // Pozovi WordPress REST API za Catalog Mode
           if (apiCredentials.siteUrl) {
             try {
-              const apiUrl = `${apiCredentials.siteUrl}/wp-json/custom/v1/catalog-mode`;
-              const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Basic ${btoa(`${apiCredentials.consumerKey}:${apiCredentials.consumerSecret}`)}`
-                },
-                body: JSON.stringify({ enable: value })
-              });
-              
-              if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || `API zahtev nije uspeo sa statusom ${response.status}`);
-              }
-              
-              const data = await response.json();
-              console.log('Wordpress API odgovor:', data);
+              await settingsService.toggleCatalogMode(value);
             } catch (apiError) {
               console.error('Greška pri pozivu WordPress API-ja:', apiError);
               toast.error(`Ažuriranje catalog mode-a na WordPress sajtu nije uspelo: ${apiError instanceof Error ? apiError.message : 'Nepoznata greška'}`);
@@ -179,7 +162,7 @@ export const useSettings = () => {
     setIsLoading(true);
     try {
       // Pokušaj da dobiješ malu količinu podataka da testiraš vezu
-      await wooCommerceApi.getProducts(1, 1);
+      await productsService.getProducts(1, 1);
       toast.success('Uspešna veza! API kredencijali rade.');
     } catch (error) {
       toast.error('Veza nije uspela. Proverite vaše kredencijale.');

@@ -1,7 +1,6 @@
-
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { wooCommerceApi } from '@/services/api';
+import { wooCommerceApi, statsService } from '@/services/api';
 import MobileLayout from '@/components/layout/MobileLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, ShoppingCart, Users, DollarSign } from 'lucide-react';
@@ -29,7 +28,7 @@ const Dashboard = () => {
     queryFn: async (): Promise<DashboardStats> => {
       try {
         // Fetch initial stats
-        const data = await wooCommerceApi.getStats();
+        const data = await statsService.getStats();
         
         // Make sure recentOrders is an array before reducing
         const recentOrders = Array.isArray(data.recentOrders) ? data.recentOrders : [];

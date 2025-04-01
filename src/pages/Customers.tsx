@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { wooCommerceApi } from '@/services/api';
+import { wooCommerceApi, customersService } from '@/services/api';
 import MobileLayout from '@/components/layout/MobileLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,7 +26,7 @@ const Customers = () => {
     queryKey: ['customers', page],
     queryFn: async () => {
       try {
-        return await wooCommerceApi.getCustomers(page, perPage);
+        return await customersService.getCustomers(page, perPage);
       } catch (error) {
         console.error('Failed to fetch customers:', error);
         throw error;
