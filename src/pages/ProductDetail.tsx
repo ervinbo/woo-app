@@ -37,13 +37,13 @@ const ProductDetail = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
 
+  // Simplified product state
   const [product, setProduct] = useState({
     name: '',
     regular_price: '',
     sale_price: '',
     description: '',
     short_description: '',
-    on_sale: false,
     status: 'publish',
     manage_stock: false,
     stock_quantity: '',
@@ -52,12 +52,14 @@ const ProductDetail = () => {
     images: [] as Array<{ id?: number, src: string, alt?: string }>
   });
 
+  // Check authentication
   useEffect(() => {
     if (!wooCommerceApi.getAuthStatus()) {
       navigate('/');
     }
   }, [navigate]);
 
+  // Load categories
   useEffect(() => {
     const fetchCategories = async () => {
       if (!wooCommerceApi.getAuthStatus()) return;
@@ -79,6 +81,7 @@ const ProductDetail = () => {
     fetchCategories();
   }, []);
 
+  // Load product if editing
   const { isLoading, error } = useQuery({
     queryKey: ['product', id],
     queryFn: async () => {
@@ -99,10 +102,11 @@ const ProductDetail = () => {
         throw error;
       }
     },
-    staleTime: 60000, // 1 minut
+    staleTime: 60000,
     enabled: !isNewProduct && !!id,
   });
 
+  // Input handlers
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setProduct({ ...product, [name]: value });
@@ -113,15 +117,11 @@ const ProductDetail = () => {
   };
 
   const handleImagesUpdate = (updatedImages: Array<{ id?: number, src: string, alt?: string }>) => {
-    setProduct({
-      ...product,
-      images: updatedImages
-    });
+    setProduct({ ...product, images: updatedImages });
   };
 
   const handleCategoryChange = (categoryId: string) => {
     const catId = parseInt(categoryId, 10);
-    
     const selectedCategory = categories.find(cat => cat.id === catId);
     
     if (selectedCategory) {
@@ -132,6 +132,7 @@ const ProductDetail = () => {
     }
   };
 
+  // Simplified save function
   const handleSave = async () => {
     if (!product.name || !product.regular_price) {
       toast.error('Naziv proizvoda i redovna cena su obavezni');
@@ -139,22 +140,20 @@ const ProductDetail = () => {
     }
 
     setIsSaving(true);
+    console.log('Saving product...', isNewProduct ? 'Creating new' : 'Updating existing');
 
     try {
-      const preparedProduct = {
-        ...product,
-        categories: product.categories.map(cat => ({ id: cat.id }))
-      };
-
       if (isNewProduct) {
-        await wooCommerceApi.products.create(preparedProduct);
+        console.log('Creating new product with data:', product);
+        const result = await wooCommerceApi.products.create(product);
+        console.log('Create product result:', result);
         toast.success('Proizvod je uspešno kreiran');
-        navigate('/products');
       } else {
-        await wooCommerceApi.products.update(Number(id), preparedProduct);
+        console.log('Updating product with ID:', id);
+        await wooCommerceApi.products.update(Number(id), product);
         toast.success('Proizvod je uspešno ažuriran');
-        navigate('/products');
       }
+      navigate('/products');
     } catch (error) {
       console.error('Greška pri čuvanju proizvoda:', error);
       
@@ -168,6 +167,7 @@ const ProductDetail = () => {
     }
   };
 
+  // Loading state
   if (isLoading && !isNewProduct) {
     return (
       <MobileLayout title={isNewProduct ? 'Novi proizvod' : 'Izmena proizvoda'}>
@@ -178,6 +178,7 @@ const ProductDetail = () => {
     );
   }
 
+  // Error state
   if (error && !isNewProduct) {
     return (
       <MobileLayout title="Detalji proizvoda">
@@ -194,6 +195,7 @@ const ProductDetail = () => {
     );
   }
 
+  // Render product form
   return (
     <MobileLayout title={isNewProduct ? 'Novi proizvod' : 'Izmena proizvoda'}>
       <div className="space-y-4">
@@ -279,15 +281,6 @@ const ProductDetail = () => {
                     placeholder="0.00"
                   />
                 </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <Label htmlFor="on_sale">Na akciji</Label>
-                <Switch 
-                  id="on_sale" 
-                  checked={product.on_sale}
-                  onCheckedChange={(checked) => handleSwitchChange('on_sale', checked)}
-                />
               </div>
 
               <div className="flex items-center justify-between">

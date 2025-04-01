@@ -2,12 +2,11 @@
 import { WooCommerceApi } from './core';
 
 export const productsService = {
-  // Helper function to prepare product data
+  // Simplified product data preparation
   prepareProductData(data: any): any {
-    // Create a copy to avoid modifying original data
     const processedData = { ...data };
     
-    // Remove ID from data if present - WooCommerce doesn't allow sending ID for new products
+    // Remove ID for new products
     if (processedData.id) {
       delete processedData.id;
     }
@@ -15,49 +14,38 @@ export const productsService = {
     // Process images if they exist
     if (processedData.images && processedData.images.length > 0) {
       processedData.images = processedData.images.map((image: any) => {
-        // If image source is base64 URL data, process it
+        // For base64 images
         if (image.src && image.src.startsWith('data:image')) {
-          return {
-            alt: image.alt || '',
-            src: image.src  // Send the full src, server will process it
-          };
+          return { alt: image.alt || '', src: image.src };
         }
-        // For existing images, send only id
+        // For existing images
         if (image.id) {
           return { id: image.id };
         }
-        // For images with URL, send src
+        // For images with URL
         return { src: image.src, alt: image.alt || '' };
       });
     }
     
-    // Check and format prices (always as string)
+    // Format prices as strings
     if (processedData.regular_price !== undefined) {
       processedData.regular_price = String(processedData.regular_price);
     }
     
-    if (processedData.sale_price !== undefined && processedData.sale_price !== '') {
-      processedData.sale_price = String(processedData.sale_price);
-    } else if (processedData.sale_price === '') {
-      // Send empty string to remove sale price
-      processedData.sale_price = '';
+    if (processedData.sale_price !== undefined) {
+      processedData.sale_price = processedData.sale_price === '' ? '' : String(processedData.sale_price);
     }
     
-    // Ensure stock_quantity is a number if manage_stock is enabled
+    // Convert stock quantity to number if manage_stock is enabled
     if (processedData.manage_stock && processedData.stock_quantity !== undefined) {
       processedData.stock_quantity = parseInt(String(processedData.stock_quantity), 10);
     }
     
-    // Prepare categories if they exist
+    // Simplify categories handling
     if (processedData.categories && Array.isArray(processedData.categories)) {
-      // Ako su kategorije već u obliku objekta sa id, zadrži ih
-      if (processedData.categories.length > 0 && typeof processedData.categories[0] === 'object') {
-        // No change needed
-      } 
-      // If categories are an array of IDs, convert them to an array of objects with ID
-      else if (processedData.categories.length > 0 && typeof processedData.categories[0] === 'number') {
-        processedData.categories = processedData.categories.map((id: number) => ({ id }));
-      }
+      processedData.categories = processedData.categories.map((cat: any) => 
+        typeof cat === 'number' ? { id: cat } : { id: cat.id }
+      );
     }
     
     return processedData;
