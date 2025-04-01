@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { wooCommerceApi, productsService } from '@/services/api';
+import { wooCommerceApi } from '@/services/api';
 import MobileLayout from '@/components/layout/MobileLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,7 +44,7 @@ const Products = () => {
     queryKey: ['products', page],
     queryFn: async () => {
       try {
-        return await productsService.getProducts(page, perPage);
+        return await wooCommerceApi.getProducts(page, perPage);
       } catch (error) {
         console.error('Failed to fetch products:', error);
         throw error;
@@ -69,7 +69,7 @@ const Products = () => {
     if (!deleteProductId) return;
 
     try {
-      await productsService.deleteProduct(deleteProductId);
+      await wooCommerceApi.deleteProduct(deleteProductId);
       toast.success('Производ је успешно обрисан');
       refetch();
     } catch (error) {
