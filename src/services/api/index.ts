@@ -1,4 +1,4 @@
 
 import { WooCommerceApi } from './core';
-export { WooCommerceCredentials } from './types';
+export type { WooCommerceCredentials } from './types';
 export { wooCommerceApi } from './core';
