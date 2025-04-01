@@ -177,17 +177,32 @@ export class WooCommerceApi {
     }
   }
 
-  get products() {
-    return {
-      getAll: (page = 1, perPage = 10) => productsService.getProducts(this, page, perPage),
-      get: (id: number) => productsService.getProduct(this, id),
-      create: (productData: any) => productsService.createProduct(this, productData),
-      update: (id: number, productData: any) => productsService.updateProduct(this, id, productData),
-      delete: (id: number) => productsService.deleteProduct(this, id),
-      getCategories: () => productsService.getCategories(this)
-    };
+  // Products methods
+  getProducts(page = 1, perPage = 10) {
+    return productsService.getProducts(this, page, perPage);
   }
 
+  getProduct(id: number) {
+    return productsService.getProduct(this, id);
+  }
+
+  createProduct(productData: any) {
+    return productsService.createProduct(this, productData);
+  }
+
+  updateProduct(id: number, productData: any) {
+    return productsService.updateProduct(this, id, productData);
+  }
+
+  deleteProduct(id: number) {
+    return productsService.deleteProduct(this, id);
+  }
+
+  getCategories() {
+    return productsService.getCategories(this);
+  }
+
+  // Orders methods
   getOrders(page = 1, perPage = 10, status = '') {
     return this.orders.getAll(page, perPage, status);
   }
@@ -200,6 +215,7 @@ export class WooCommerceApi {
     return this.orders.updateStatus(id, status);
   }
 
+  // Customers methods
   getCustomers(page = 1, perPage = 10) {
     return this.customers.getAll(page, perPage);
   }
@@ -208,36 +224,14 @@ export class WooCommerceApi {
     return this.customers.get(id);
   }
 
+  // Stats methods
   getStats() {
     return this.stats.getAll();
   }
 
+  // Settings methods
   toggleCatalogMode(enable: boolean) {
     return this.settings.toggleCatalogMode(enable);
-  }
-
-  getProducts(page = 1, perPage = 10) {
-    return this.products.getAll(page, perPage);
-  }
-
-  getProduct(id: number) {
-    return this.products.get(id);
-  }
-
-  createProduct(productData: any) {
-    return this.products.create(productData);
-  }
-
-  updateProduct(id: number, productData: any) {
-    return this.products.update(id, productData);
-  }
-
-  deleteProduct(id: number) {
-    return this.products.delete(id);
-  }
-
-  getCategories() {
-    return this.products.getCategories();
   }
 }
 

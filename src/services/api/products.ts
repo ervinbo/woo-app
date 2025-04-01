@@ -8,7 +8,7 @@ export const productsService = {
     const processedData = { ...data };
     
     // Remove ID for new products
-    if (processedData.id) {
+    if (processedData.id && processedData.id === 'new') {
       delete processedData.id;
     }
     

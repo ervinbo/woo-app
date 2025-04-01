@@ -55,7 +55,7 @@ const ProductDetail = () => {
     const fetchCategories = async () => {
       setIsLoadingCategories(true);
       try {
-        const response = await wooCommerceApi.products.getCategories();
+        const response = await wooCommerceApi.getCategories();
         console.log("Categories loaded:", response);
         if (Array.isArray(response)) {
           setCategories(response);
@@ -77,7 +77,7 @@ const ProductDetail = () => {
     queryFn: async () => {
       if (isNewProduct) return null;
       try {
-        const data = await wooCommerceApi.products.get(Number(id));
+        const data = await wooCommerceApi.getProduct(Number(id));
         console.log("Loaded product:", data);
         setProduct({
           ...data,
@@ -142,13 +142,13 @@ const ProductDetail = () => {
     try {
       if (isNewProduct) {
         // Create new product
-        const result = await wooCommerceApi.products.create(product);
+        const result = await wooCommerceApi.createProduct(product);
         console.log('Create product result:', result);
         toast.success('Product created successfully');
         navigate('/products');
       } else if (id) {
         // Update existing product
-        await wooCommerceApi.products.update(Number(id), product);
+        await wooCommerceApi.updateProduct(Number(id), product);
         toast.success('Product updated successfully');
         navigate('/products');
       }
