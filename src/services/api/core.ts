@@ -1,3 +1,4 @@
+
 import { toast } from "@/lib/toast";
 import { WooCommerceCredentials } from './types';
 import { productsService } from './products';
@@ -12,9 +13,55 @@ export class WooCommerceApi {
   private consumerSecret: string = '';
   private isAuthenticated: boolean = false;
 
+  // Define service properties
+  public readonly orders: {
+    getAll: (page?: number, perPage?: number, status?: string) => Promise<any>;
+    get: (id: number) => Promise<any>;
+    updateStatus: (id: number, status: string) => Promise<any>;
+  };
+
+  public readonly customers: {
+    getAll: (page?: number, perPage?: number) => Promise<any>;
+    get: (id: number) => Promise<any>;
+  };
+
+  public readonly stats: {
+    getAll: () => Promise<any>;
+  };
+
+  public readonly settings: {
+    toggleCatalogMode: (enable: boolean) => Promise<any>;
+  };
+
   constructor() {
     // Try to load credentials from localStorage
     this.loadCredentials();
+
+    // Initialize service properties
+    this.orders = {
+      getAll: (page = 1, perPage = 10, status = '') => 
+        ordersService.getOrders(this, page, perPage, status),
+      get: (id: number) => 
+        ordersService.getOrder(this, id),
+      updateStatus: (id: number, status: string) => 
+        ordersService.updateOrderStatus(this, id, status)
+    };
+
+    this.customers = {
+      getAll: (page = 1, perPage = 10) => 
+        customersService.getCustomers(this, page, perPage),
+      get: (id: number) => 
+        customersService.getCustomer(this, id)
+    };
+
+    this.stats = {
+      getAll: () => statsService.getStats(this)
+    };
+
+    this.settings = {
+      toggleCatalogMode: (enable: boolean) => 
+        settingsService.toggleCatalogMode(this, enable)
+    };
   }
 
   loadCredentials(): void {
