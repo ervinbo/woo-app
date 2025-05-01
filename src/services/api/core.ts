@@ -33,6 +33,15 @@ export class WooCommerceApi {
     toggleCatalogMode: (enable: boolean) => Promise<any>;
   };
 
+  public readonly products: {
+    getAll: (page?: number, perPage?: number) => Promise<any>;
+    get: (id: number) => Promise<any>;
+    create: (productData: any) => Promise<any>;
+    update: (id: number, productData: any) => Promise<any>;
+    delete: (id: number) => Promise<any>;
+    getCategories: () => Promise<any>;
+  };
+
   constructor() {
     // Try to load credentials from localStorage
     this.loadCredentials();
@@ -61,6 +70,21 @@ export class WooCommerceApi {
     this.settings = {
       toggleCatalogMode: (enable: boolean) => 
         settingsService.toggleCatalogMode(this, enable)
+    };
+    
+    this.products = {
+      getAll: (page = 1, perPage = 10) => 
+        productsService.getProducts(this, page, perPage),
+      get: (id: number) => 
+        productsService.getProduct(this, id),
+      create: (productData: any) => 
+        productsService.createProduct(this, productData),
+      update: (id: number, productData: any) => 
+        productsService.updateProduct(this, id, productData),
+      delete: (id: number) => 
+        productsService.deleteProduct(this, id),
+      getCategories: () => 
+        productsService.getCategories(this)
     };
   }
 
@@ -179,27 +203,27 @@ export class WooCommerceApi {
 
   // Products methods
   getProducts(page = 1, perPage = 10) {
-    return productsService.getProducts(this, page, perPage);
+    return this.products.getAll(page, perPage);
   }
 
   getProduct(id: number) {
-    return productsService.getProduct(this, id);
+    return this.products.get(id);
   }
 
   createProduct(productData: any) {
-    return productsService.createProduct(this, productData);
+    return this.products.create(productData);
   }
 
   updateProduct(id: number, productData: any) {
-    return productsService.updateProduct(this, id, productData);
+    return this.products.update(id, productData);
   }
 
   deleteProduct(id: number) {
-    return productsService.deleteProduct(this, id);
+    return this.products.delete(id);
   }
 
   getCategories() {
-    return productsService.getCategories(this);
+    return this.products.getCategories();
   }
 
   // Orders methods

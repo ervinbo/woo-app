@@ -41,7 +41,7 @@ const Auth = () => {
       });
 
       // Test connection by fetching products
-      await wooCommerceApi.getProducts(1, 1);
+      await wooCommerceApi.products.getAll(1, 1);
       
       toast.success('Успешно повезано са WooCommerce продавницом!');
       navigate('/dashboard');

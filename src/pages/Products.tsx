@@ -44,7 +44,7 @@ const Products = () => {
     queryKey: ['products', page],
     queryFn: async () => {
       try {
-        return await wooCommerceApi.getProducts(page, perPage);
+        return await wooCommerceApi.products.getAll(page, perPage);
       } catch (error) {
         console.error('Failed to fetch products:', error);
         throw error;
@@ -69,7 +69,7 @@ const Products = () => {
     if (!deleteProductId) return;
 
     try {
-      await wooCommerceApi.deleteProduct(deleteProductId);
+      await wooCommerceApi.products.delete(deleteProductId);
       toast.success('Производ је успешно обрисан');
       refetch();
     } catch (error) {

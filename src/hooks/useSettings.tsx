@@ -152,7 +152,7 @@ export const useSettings = () => {
   const testConnection = async () => {
     setIsLoading(true);
     try {
-      await wooCommerceApi.getProducts(1, 1);
+      await wooCommerceApi.products.getAll(1, 1);
       toast.success('Uspešna veza! API kredencijali rade.');
     } catch (error) {
       toast.error('Veza nije uspela. Proverite vaše kredencijale.');
